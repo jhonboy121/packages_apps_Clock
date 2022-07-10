@@ -13,6 +13,23 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 -->
-<resources>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name">Clock</string>
+
+    <!-- Main screen -->
+    <string name="menu_button_content_desc">Menu button icon</string>
+
+    <!-- Alarm -->
+    <string name="alarm">Alarm</string>
+
+    <!-- Clock -->
+    <string name="clock">Clock</string>
+
+    <!-- Timer -->
+    <string name="timer">Timer</string>
+
+    <!-- Stopwatch -->
+    <string name="stopwatch">Stopwatch</string>
+    <string name="item_alarm_content_desc">Icon for <xliff:g example="Alarm" id="page">%1$s</xliff:g> page button in bottom bar</string>
+
 </resources>
