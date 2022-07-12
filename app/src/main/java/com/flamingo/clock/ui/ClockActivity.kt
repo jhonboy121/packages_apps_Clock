@@ -57,10 +57,16 @@ class ClockActivity : ComponentActivity() {
                             else -> NavigationType.BottomBar
                         }
                     }
+                val contentOrientation =
+                    if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded) {
+                        ContentOrientation.Horizontal
+                    } else {
+                        ContentOrientation.Vertical
+                    }
                 MainScreen(
                     modifier = Modifier.fillMaxSize(),
-                    windowSizeClass = windowSizeClass,
-                    navigationType = navigationType
+                    navigationType = navigationType,
+                    orientation = contentOrientation
                 )
             }
         }
@@ -71,4 +77,9 @@ sealed interface NavigationType {
     object BottomBar : NavigationType
     object SideRail : NavigationType
     object PermanentDrawer : NavigationType
+}
+
+sealed interface ContentOrientation {
+    object Vertical : ContentOrientation
+    object Horizontal : ContentOrientation
 }

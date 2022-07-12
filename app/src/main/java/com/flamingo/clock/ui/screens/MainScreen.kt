@@ -41,8 +41,6 @@ import androidx.compose.material3.PermanentNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallTopAppBar
 import androidx.compose.material3.Text
-import androidx.compose.material3.windowsizeclass.WindowSizeClass
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -55,14 +53,16 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 
 import com.flamingo.clock.R
+import com.flamingo.clock.ui.ContentOrientation
 import com.flamingo.clock.ui.NavigationType
+
 import kotlinx.parcelize.Parcelize
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
-    windowSizeClass: WindowSizeClass,
     navigationType: NavigationType,
+    orientation: ContentOrientation,
     modifier: Modifier = Modifier
 ) {
     val pages = rememberSaveable { listOf(Page.Alarm, Page.Clock, Page.Timer, Page.Stopwatch) }
@@ -82,7 +82,7 @@ fun MainScreen(
                     pages = pages,
                     selectedPage = selectedPage,
                     onPageSwitchRequest = pageSwitchCallback,
-                    widthSizeClass = windowSizeClass.widthSizeClass,
+                    orientation = orientation,
                     modifier = Modifier
                         .padding(padding)
                         .fillMaxSize()
@@ -93,7 +93,7 @@ fun MainScreen(
                     pages = pages,
                     selectedPage = selectedPage,
                     onPageSwitchRequest = pageSwitchCallback,
-                    widthSizeClass = windowSizeClass.widthSizeClass,
+                    orientation = orientation,
                     modifier = Modifier
                         .padding(padding)
                         .fillMaxSize()
@@ -104,7 +104,7 @@ fun MainScreen(
                     pages = pages,
                     selectedPage = selectedPage,
                     onPageSwitchRequest = pageSwitchCallback,
-                    widthSizeClass = windowSizeClass.widthSizeClass,
+                    orientation = orientation,
                     modifier = Modifier
                         .padding(padding)
                         .fillMaxSize()
@@ -140,7 +140,7 @@ fun MainScreenWithBottomBar(
     pages: List<Page>,
     selectedPage: Page,
     onPageSwitchRequest: (Page) -> Unit,
-    widthSizeClass: WindowWidthSizeClass,
+    orientation: ContentOrientation,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
@@ -180,7 +180,7 @@ fun MainScreenWithSideRail(
     pages: List<Page>,
     selectedPage: Page,
     onPageSwitchRequest: (Page) -> Unit,
-    widthSizeClass: WindowWidthSizeClass,
+    orientation: ContentOrientation,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -221,7 +221,7 @@ fun MainScreenWithPermanentDrawer(
     pages: List<Page>,
     selectedPage: Page,
     onPageSwitchRequest: (Page) -> Unit,
-    widthSizeClass: WindowWidthSizeClass,
+    orientation: ContentOrientation,
     modifier: Modifier = Modifier
 ) {
     PermanentNavigationDrawer(
