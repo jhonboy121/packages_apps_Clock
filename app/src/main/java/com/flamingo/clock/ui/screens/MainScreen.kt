@@ -16,6 +16,7 @@
 
 package com.flamingo.clock.ui.screens
 
+import android.os.Parcelable
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
@@ -45,8 +46,8 @@ import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -55,6 +56,7 @@ import androidx.compose.ui.res.stringResource
 
 import com.flamingo.clock.R
 import com.flamingo.clock.ui.NavigationType
+import kotlinx.parcelize.Parcelize
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,8 +65,8 @@ fun MainScreen(
     navigationType: NavigationType,
     modifier: Modifier = Modifier
 ) {
-    val pages = remember { listOf(Page.Alarm, Page.Clock, Page.Timer, Page.Stopwatch) }
-    var selectedPage by remember { mutableStateOf(pages.first()) }
+    val pages = rememberSaveable { listOf(Page.Alarm, Page.Clock, Page.Timer, Page.Stopwatch) }
+    var selectedPage by rememberSaveable { mutableStateOf(pages.first()) }
     val pageSwitchCallback by rememberUpdatedState(newValue = { page: Page ->
         selectedPage = page
     })
@@ -173,7 +175,6 @@ fun MainScreenWithBottomBar(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreenWithSideRail(
     pages: List<Page>,
@@ -271,7 +272,8 @@ fun MainScreenContent(selectedPage: Page, modifier: Modifier = Modifier) {
     }
 }
 
-sealed class Page(@StringRes val labelId: Int, @DrawableRes val iconId: Int) {
+@Parcelize
+sealed class Page(@StringRes val labelId: Int, @DrawableRes val iconId: Int) : Parcelable {
     object Alarm : Page(labelId = R.string.alarm, iconId = R.drawable.baseline_alarm_24)
     object Clock : Page(labelId = R.string.clock, iconId = R.drawable.baseline_clock_24)
     object Timer : Page(labelId = R.string.timer, iconId = R.drawable.baseline_timer_24)
