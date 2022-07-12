@@ -148,7 +148,8 @@ fun MainScreenWithBottomBar(
             selectedPage = selectedPage,
             modifier = Modifier
                 .fillMaxSize()
-                .weight(1f)
+                .weight(1f),
+            orientation = orientation
         )
         NavigationBar(modifier = Modifier.fillMaxWidth()) {
             pages.forEach {
@@ -210,7 +211,8 @@ fun MainScreenWithSideRail(
             selectedPage = selectedPage,
             modifier = Modifier
                 .fillMaxSize()
-                .weight(1f)
+                .weight(1f),
+            orientation = orientation
         )
     }
 }
@@ -251,14 +253,19 @@ fun MainScreenWithPermanentDrawer(
     ) {
         MainScreenContent(
             selectedPage = selectedPage,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
+            orientation = orientation
         )
     }
 }
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun MainScreenContent(selectedPage: Page, modifier: Modifier = Modifier) {
+fun MainScreenContent(
+    selectedPage: Page,
+    orientation: ContentOrientation,
+    modifier: Modifier = Modifier
+) {
     AnimatedContent(
         targetState = selectedPage,
         modifier = modifier.fillMaxSize()
@@ -267,7 +274,7 @@ fun MainScreenContent(selectedPage: Page, modifier: Modifier = Modifier) {
             Page.Alarm -> AlarmScreen()
             Page.Clock -> ClockScreen()
             Page.Timer -> TimerScreen()
-            Page.Stopwatch -> StopwatchScreen()
+            Page.Stopwatch -> StopwatchScreen(orientation = orientation)
         }
     }
 }

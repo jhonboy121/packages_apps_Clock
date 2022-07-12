@@ -31,5 +31,18 @@
 
     <!-- Stopwatch -->
     <string name="stopwatch">Stopwatch</string>
+    <string name="start_stop_button_content_desc">Stopwatch start or stop button</string>
+    <string name="stopwatch_service_notification_channel_name">Stopwatch service</string>
+    <string name="pause">Pause</string>
+    <string name="lap">Lap</string>
+    <string name="lap_text_format">Lap <xliff:g example="1" id="lap_number">%1$d</xliff:g></string>
+    <string name="start">Start</string>
+    <string name="reset">Reset</string>
+    <string name="paused">Paused</string>
+    <string name="lap_button_content_desc">Lap button</string>
+    <string name="reset_button_content_desc">Stopwatch reset button</string>
+    <string name="lap_text_format_full">
+        #\u0020<xliff:g example="1" id="lap_number">%1$s</xliff:g>\u0020\u0020\u0020<xliff:g example="01.11" id="lap_duration">%2$s</xliff:g>\u0020\u0020\u0020<xliff:g example="01.11" id="lap_time">%3$s</xliff:g>
+    </string>
 
 </resources>
