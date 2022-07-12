@@ -20,6 +20,11 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
@@ -28,63 +33,80 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailItem
+import androidx.compose.material3.PermanentNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallTopAppBar
 import androidx.compose.material3.Text
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 
 import com.flamingo.clock.R
-import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.HorizontalPager
-import com.google.accompanist.pager.rememberPagerState
+import com.flamingo.clock.ui.NavigationType
 
-import kotlinx.coroutines.launch
-
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalPagerApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(modifier: Modifier = Modifier) {
+fun MainScreen(
+    windowSizeClass: WindowSizeClass,
+    navigationType: NavigationType,
+    modifier: Modifier = Modifier
+) {
     val pages = remember { listOf(Page.Alarm, Page.Clock, Page.Timer, Page.Stopwatch) }
-    val pagerState = rememberPagerState()
-    val currentPage by remember {
-        derivedStateOf {
-            pages[pagerState.currentPage]
-        }
-    }
+    var selectedPage by remember { mutableStateOf(pages.first()) }
+    val pageSwitchCallback by rememberUpdatedState(newValue = { page: Page ->
+        selectedPage = page
+    })
     Scaffold(
         modifier = modifier,
         topBar = {
-            TopBar(labelId = currentPage.labelId)
+            TopBar(labelId = selectedPage.labelId)
         },
-        bottomBar = {
-            val coroutineScope = rememberCoroutineScope()
-            BottomNavigationBar(
-                selectedIndex = pagerState.currentPage,
-                items = pages,
-                onPageSwitchRequest = {
-                    coroutineScope.launch {
-                        pagerState.animateScrollToPage(it)
-                    }
-                }
-            )
-        }
     ) { padding ->
-        HorizontalPager(
-            modifier = Modifier.padding(padding),
-            count = pages.size,
-            state = pagerState
-        ) {
-            when (currentPage) {
-                Page.Alarm -> AlarmScreen()
-                Page.Clock -> ClockScreen()
-                Page.Timer -> TimerScreen()
-                Page.Stopwatch -> StopwatchScreen()
+        when (navigationType) {
+            NavigationType.BottomBar -> {
+                MainScreenWithBottomBar(
+                    pages = pages,
+                    selectedPage = selectedPage,
+                    onPageSwitchRequest = pageSwitchCallback,
+                    widthSizeClass = windowSizeClass.widthSizeClass,
+                    modifier = Modifier
+                        .padding(padding)
+                        .fillMaxSize()
+                )
+            }
+            NavigationType.SideRail -> {
+                MainScreenWithSideRail(
+                    pages = pages,
+                    selectedPage = selectedPage,
+                    onPageSwitchRequest = pageSwitchCallback,
+                    widthSizeClass = windowSizeClass.widthSizeClass,
+                    modifier = Modifier
+                        .padding(padding)
+                        .fillMaxSize()
+                )
+            }
+            NavigationType.PermanentDrawer -> {
+                MainScreenWithPermanentDrawer(
+                    pages = pages,
+                    selectedPage = selectedPage,
+                    onPageSwitchRequest = pageSwitchCallback,
+                    widthSizeClass = windowSizeClass.widthSizeClass,
+                    modifier = Modifier
+                        .padding(padding)
+                        .fillMaxSize()
+                )
             }
         }
     }
@@ -112,32 +134,139 @@ fun TopBar(labelId: Int, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun BottomNavigationBar(
-    items: List<Page>,
-    selectedIndex: Int,
-    onPageSwitchRequest: (Int) -> Unit,
+fun MainScreenWithBottomBar(
+    pages: List<Page>,
+    selectedPage: Page,
+    onPageSwitchRequest: (Page) -> Unit,
+    widthSizeClass: WindowWidthSizeClass,
     modifier: Modifier = Modifier
 ) {
-    NavigationBar(modifier = modifier) {
-        items.forEachIndexed { index, page ->
-            NavigationBarItem(
-                selected = index == selectedIndex,
-                onClick = {
-                    onPageSwitchRequest(index)
-                },
-                icon = {
-                    Icon(
-                        painter = painterResource(id = page.iconId),
-                        contentDescription = stringResource(
-                            id = R.string.item_alarm_content_desc,
-                            page.toString()
+    Column(modifier = modifier) {
+        MainScreenContent(
+            selectedPage = selectedPage,
+            modifier = Modifier
+                .fillMaxSize()
+                .weight(1f)
+        )
+        NavigationBar(modifier = Modifier.fillMaxWidth()) {
+            pages.forEach {
+                NavigationBarItem(
+                    selected = it == selectedPage,
+                    onClick = {
+                        onPageSwitchRequest(it)
+                    },
+                    icon = {
+                        Icon(
+                            painter = painterResource(id = it.iconId),
+                            contentDescription = stringResource(
+                                id = R.string.nav_bar_button_content_desc,
+                                it.toString()
+                            )
                         )
-                    )
-                },
-                label = {
-                    Text(text = stringResource(id = page.labelId))
-                }
-            )
+                    },
+                    label = {
+                        Text(text = stringResource(id = it.labelId))
+                    }
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MainScreenWithSideRail(
+    pages: List<Page>,
+    selectedPage: Page,
+    onPageSwitchRequest: (Page) -> Unit,
+    widthSizeClass: WindowWidthSizeClass,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        NavigationRail(modifier = Modifier.fillMaxHeight()) {
+            pages.forEach {
+                NavigationRailItem(
+                    selected = it == selectedPage,
+                    onClick = {
+                        onPageSwitchRequest(it)
+                    },
+                    icon = {
+                        Icon(
+                            painter = painterResource(id = it.iconId),
+                            contentDescription = stringResource(
+                                id = R.string.nav_bar_button_content_desc,
+                                it.toString()
+                            )
+                        )
+                    }
+                )
+            }
+        }
+        MainScreenContent(
+            selectedPage = selectedPage,
+            modifier = Modifier
+                .fillMaxSize()
+                .weight(1f)
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MainScreenWithPermanentDrawer(
+    pages: List<Page>,
+    selectedPage: Page,
+    onPageSwitchRequest: (Page) -> Unit,
+    widthSizeClass: WindowWidthSizeClass,
+    modifier: Modifier = Modifier
+) {
+    PermanentNavigationDrawer(
+        modifier = modifier,
+        drawerContent = {
+            pages.forEach {
+                NavigationDrawerItem(
+                    selected = it == selectedPage,
+                    onClick = {
+                        onPageSwitchRequest(it)
+                    },
+                    icon = {
+                        Icon(
+                            painter = painterResource(id = it.iconId),
+                            contentDescription = stringResource(
+                                id = R.string.nav_bar_button_content_desc,
+                                it.toString()
+                            )
+                        )
+                    },
+                    label = {
+                        Text(text = stringResource(id = it.labelId))
+                    }
+                )
+            }
+        }
+    ) {
+        MainScreenContent(
+            selectedPage = selectedPage,
+            modifier = Modifier.fillMaxSize()
+        )
+    }
+}
+
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
+fun MainScreenContent(selectedPage: Page, modifier: Modifier = Modifier) {
+    AnimatedContent(
+        targetState = selectedPage,
+        modifier = modifier.fillMaxSize()
+    ) {
+        when (it) {
+            Page.Alarm -> AlarmScreen()
+            Page.Clock -> ClockScreen()
+            Page.Timer -> TimerScreen()
+            Page.Stopwatch -> StopwatchScreen()
         }
     }
 }

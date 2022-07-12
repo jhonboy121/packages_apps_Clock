@@ -18,6 +18,7 @@
 
     <!-- Main screen -->
     <string name="menu_button_content_desc">Menu button icon</string>
+    <string name="nav_bar_button_content_desc">Icon for <xliff:g example="Alarm" id="page">%1$s</xliff:g> page button in navigation bar</string>
 
     <!-- Alarm -->
     <string name="alarm">Alarm</string>
@@ -30,6 +31,5 @@
 
     <!-- Stopwatch -->
     <string name="stopwatch">Stopwatch</string>
-    <string name="item_alarm_content_desc">Icon for <xliff:g example="Alarm" id="page">%1$s</xliff:g> page button in bottom bar</string>
 
 </resources>
