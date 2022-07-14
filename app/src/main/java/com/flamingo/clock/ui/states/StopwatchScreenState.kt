@@ -20,7 +20,6 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
-import android.content.res.Resources
 import android.os.IBinder
 
 import androidx.compose.runtime.Composable
@@ -30,8 +29,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
-import com.flamingo.clock.R
 
+import com.flamingo.clock.R
 import com.flamingo.clock.data.Time
 import com.flamingo.clock.data.formatTime
 import com.flamingo.clock.services.StopwatchService
@@ -45,8 +44,10 @@ import kotlinx.coroutines.flow.map
 
 class StopwatchScreenState(
     private val stopwatchService: StopwatchService?,
-    private val resources: Resources
+    private val context: Context
 ) {
+
+    private val serviceIntent = Intent(context, StopwatchService::class.java)
 
     val time: Flow<Time>
         get() = stopwatchService?.time ?: emptyFlow()
@@ -65,7 +66,7 @@ class StopwatchScreenState(
             val currentLapTime = Time.fromTimeInMillis(lap.lapTime)
             newList.map {
                 val zerosToAdd = totalDigits - getDigitsInNumber(it.number)
-                resources.getString(
+                context.getString(
                     R.string.lap_text_format_full,
                     prependZeros(it.number, zerosToAdd),
                     formatTime(
@@ -86,20 +87,19 @@ class StopwatchScreenState(
 
     val currentLap: Flow<Pair<Int, String>>
         get() = stopwatchService?.currentLap?.map {
-            Pair(
-                it.number, resources.getString(
-                    R.string.lap_text_format_full,
-                    it.number.toString(),
-                    formatTime(
-                        Time.fromTimeInMillis(it.duration),
-                        alwaysShowMillis = true
-                    ),
-                    formatTime(Time.fromTimeInMillis(it.lapTime), alwaysShowMillis = true)
-                )
+            it.number to context.getString(
+                R.string.lap_text_format_full,
+                it.number.toString(),
+                formatTime(
+                    Time.fromTimeInMillis(it.duration),
+                    alwaysShowMillis = true
+                ),
+                formatTime(Time.fromTimeInMillis(it.lapTime), alwaysShowMillis = true)
             )
         } ?: emptyFlow()
 
     fun start() {
+        context.startService(serviceIntent)
         stopwatchService?.start()
     }
 
@@ -113,6 +113,7 @@ class StopwatchScreenState(
 
     fun reset() {
         stopwatchService?.reset()
+        context.stopService(serviceIntent)
     }
 
     private fun getDigitsInNumber(number: Int): Int {
@@ -164,6 +165,6 @@ fun rememberStopwatchScreenState(context: Context = LocalContext.current): Stopw
         }
     }
     return remember(service, context.resources) {
-        StopwatchScreenState(stopwatchService = service, resources = context.resources)
+        StopwatchScreenState(stopwatchService = service, context = context)
     }
 }
