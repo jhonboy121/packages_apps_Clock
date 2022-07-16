@@ -31,6 +31,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -163,7 +164,7 @@ private fun VerticalScreenContent(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier,
+        modifier = modifier.padding(vertical = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
@@ -218,7 +219,6 @@ private fun VerticalScreenContent(
         }
         HorizontalControlButtons(
             modifier = Modifier
-                .padding(bottom = 16.dp)
                 .fillMaxWidth(),
             hasStarted = hasStarted,
             isRunning = isRunning,
@@ -243,7 +243,7 @@ private fun HorizontalScreenContent(
     modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = modifier,
+        modifier = modifier.padding(horizontal = 24.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start
     ) {
@@ -286,6 +286,7 @@ private fun HorizontalScreenContent(
                     },
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
+                contentPadding = PaddingValues(vertical = 8.dp)
             ) {
                 item(key = currentLap.first) {
                     Text(currentLap.second, modifier = Modifier.animateItemPlacement())
@@ -297,7 +298,6 @@ private fun HorizontalScreenContent(
         }
         VerticalControlButtons(
             modifier = Modifier
-                .padding(end = 32.dp)
                 .fillMaxHeight(),
             hasStarted = hasStarted,
             isRunning = isRunning,
