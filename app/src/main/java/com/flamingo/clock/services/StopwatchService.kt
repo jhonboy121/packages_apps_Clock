@@ -81,7 +81,7 @@ class StopwatchService : LifecycleService() {
 
     private val _time = MutableStateFlow(0L)
     val time: Flow<Time>
-        get() = _time.map { Time.fromTimeInMillis(it) }.distinctUntilChanged()
+        get() = _time.map { Time.fromMillis(it) }.distinctUntilChanged()
 
     private val notificationTime: Flow<String>
         get() = time.map { formatTime(it, true) }.distinctUntilChanged()

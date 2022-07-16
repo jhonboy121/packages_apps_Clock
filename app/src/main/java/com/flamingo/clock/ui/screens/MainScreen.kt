@@ -32,6 +32,7 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationDrawerItem
@@ -41,16 +42,24 @@ import androidx.compose.material3.PermanentNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallTopAppBar
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.rememberTopAppBarScrollState
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 
 import com.flamingo.clock.R
 import com.flamingo.clock.ui.ContentOrientation
@@ -63,6 +72,7 @@ import kotlinx.parcelize.Parcelize
 fun MainScreen(
     navigationType: NavigationType,
     orientation: ContentOrientation,
+    navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
     val pages = rememberSaveable { listOf(Page.Alarm, Page.Clock, Page.Timer, Page.Stopwatch) }
@@ -70,10 +80,16 @@ fun MainScreen(
     val pageSwitchCallback by rememberUpdatedState(newValue = { page: Page ->
         selectedPage = page
     })
+    val scrollState = rememberTopAppBarScrollState()
+    val topAppBarScrollBehavior =
+        remember(scrollState) { TopAppBarDefaults.pinnedScrollBehavior(scrollState) }
     Scaffold(
         modifier = modifier,
         topBar = {
-            TopBar(labelId = selectedPage.labelId)
+            TopBar(
+                labelId = selectedPage.labelId,
+                topAppBarScrollBehavior = topAppBarScrollBehavior
+            )
         },
     ) { padding ->
         when (navigationType) {
@@ -85,7 +101,9 @@ fun MainScreen(
                     orientation = orientation,
                     modifier = Modifier
                         .padding(padding)
-                        .fillMaxSize()
+                        .fillMaxSize(),
+                    navController = navController,
+                    nestedScrollConnection = topAppBarScrollBehavior.nestedScrollConnection
                 )
             }
             NavigationType.SideRail -> {
@@ -96,7 +114,9 @@ fun MainScreen(
                     orientation = orientation,
                     modifier = Modifier
                         .padding(padding)
-                        .fillMaxSize()
+                        .fillMaxSize(),
+                    navController = navController,
+                    nestedScrollConnection = topAppBarScrollBehavior.nestedScrollConnection
                 )
             }
             NavigationType.PermanentDrawer -> {
@@ -107,7 +127,9 @@ fun MainScreen(
                     orientation = orientation,
                     modifier = Modifier
                         .padding(padding)
-                        .fillMaxSize()
+                        .fillMaxSize(),
+                    navController = navController,
+                    nestedScrollConnection = topAppBarScrollBehavior.nestedScrollConnection
                 )
             }
         }
@@ -116,11 +138,15 @@ fun MainScreen(
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun TopBar(labelId: Int, modifier: Modifier = Modifier) {
+fun TopBar(
+    labelId: Int,
+    topAppBarScrollBehavior: TopAppBarScrollBehavior,
+    modifier: Modifier = Modifier
+) {
     SmallTopAppBar(
         modifier = modifier,
         title = {
-            AnimatedContent(targetState = labelId) {
+            AnimatedContent(targetState = labelId, modifier = Modifier.padding(start = 8.dp)) {
                 Text(text = stringResource(it))
             }
         },
@@ -131,7 +157,11 @@ fun TopBar(labelId: Int, modifier: Modifier = Modifier) {
                     contentDescription = stringResource(id = R.string.menu_button_content_desc)
                 )
             }
-        }
+        },
+        colors = TopAppBarDefaults.smallTopAppBarColors(
+            scrolledContainerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp)
+        ),
+        scrollBehavior = topAppBarScrollBehavior
     )
 }
 
@@ -141,6 +171,8 @@ fun MainScreenWithBottomBar(
     selectedPage: Page,
     onPageSwitchRequest: (Page) -> Unit,
     orientation: ContentOrientation,
+    navController: NavHostController,
+    nestedScrollConnection: NestedScrollConnection,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
@@ -149,7 +181,9 @@ fun MainScreenWithBottomBar(
             modifier = Modifier
                 .fillMaxSize()
                 .weight(1f),
-            orientation = orientation
+            orientation = orientation,
+            navController = navController,
+            nestedScrollConnection = nestedScrollConnection
         )
         NavigationBar(modifier = Modifier.fillMaxWidth()) {
             pages.forEach {
@@ -182,6 +216,8 @@ fun MainScreenWithSideRail(
     selectedPage: Page,
     onPageSwitchRequest: (Page) -> Unit,
     orientation: ContentOrientation,
+    navController: NavHostController,
+    nestedScrollConnection: NestedScrollConnection,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -212,7 +248,9 @@ fun MainScreenWithSideRail(
             modifier = Modifier
                 .fillMaxSize()
                 .weight(1f),
-            orientation = orientation
+            orientation = orientation,
+            navController = navController,
+            nestedScrollConnection = nestedScrollConnection
         )
     }
 }
@@ -224,6 +262,8 @@ fun MainScreenWithPermanentDrawer(
     selectedPage: Page,
     onPageSwitchRequest: (Page) -> Unit,
     orientation: ContentOrientation,
+    navController: NavHostController,
+    nestedScrollConnection: NestedScrollConnection,
     modifier: Modifier = Modifier
 ) {
     PermanentNavigationDrawer(
@@ -254,7 +294,9 @@ fun MainScreenWithPermanentDrawer(
         MainScreenContent(
             selectedPage = selectedPage,
             modifier = Modifier.fillMaxSize(),
-            orientation = orientation
+            orientation = orientation,
+            navController = navController,
+            nestedScrollConnection = nestedScrollConnection
         )
     }
 }
@@ -264,6 +306,8 @@ fun MainScreenWithPermanentDrawer(
 fun MainScreenContent(
     selectedPage: Page,
     orientation: ContentOrientation,
+    navController: NavHostController,
+    nestedScrollConnection: NestedScrollConnection,
     modifier: Modifier = Modifier
 ) {
     AnimatedContent(
@@ -272,9 +316,17 @@ fun MainScreenContent(
     ) {
         when (it) {
             Page.Alarm -> AlarmScreen()
-            Page.Clock -> ClockScreen()
+            Page.Clock -> ClockScreen(
+                orientation = orientation,
+                modifier = Modifier.fillMaxSize(),
+                navController = navController,
+                nestedScrollConnection = nestedScrollConnection
+            )
             Page.Timer -> TimerScreen()
-            Page.Stopwatch -> StopwatchScreen(orientation = orientation)
+            Page.Stopwatch -> StopwatchScreen(
+                orientation = orientation,
+                modifier = Modifier.fillMaxSize()
+            )
         }
     }
 }

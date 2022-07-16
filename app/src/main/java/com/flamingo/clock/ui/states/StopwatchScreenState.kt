@@ -62,23 +62,23 @@ class StopwatchScreenState(
         get() = stopwatchService?.laps?.combine(stopwatchService.currentLap) { list, lap ->
             val newList = list.sortedByDescending { it.number }
             val totalDigits = getDigitsInNumber(lap.number)
-            val currentLapDuration = Time.fromTimeInMillis(lap.duration)
-            val currentLapTime = Time.fromTimeInMillis(lap.lapTime)
+            val currentLapDuration = Time.fromMillis(lap.duration)
+            val currentLapTime = Time.fromMillis(lap.lapTime)
             newList.map {
                 val zerosToAdd = totalDigits - getDigitsInNumber(it.number)
                 context.getString(
                     R.string.lap_text_format_full,
                     prependZeros(it.number, zerosToAdd),
                     formatTime(
-                        Time.fromTimeInMillis(it.duration),
-                        alwaysShowHours = currentLapDuration.hours > 0,
-                        alwaysShowMinutes = currentLapDuration.minutes > 0,
+                        Time.fromMillis(it.duration),
+                        alwaysShowHours = currentLapDuration.hour > 0,
+                        alwaysShowMinutes = currentLapDuration.minute > 0,
                         alwaysShowMillis = true
                     ),
                     formatTime(
-                        Time.fromTimeInMillis(it.lapTime),
-                        alwaysShowHours = currentLapTime.hours > 0,
-                        alwaysShowMinutes = currentLapTime.minutes > 0,
+                        Time.fromMillis(it.lapTime),
+                        alwaysShowHours = currentLapTime.hour > 0,
+                        alwaysShowMinutes = currentLapTime.minute > 0,
                         alwaysShowMillis = true
                     )
                 )
@@ -91,10 +91,10 @@ class StopwatchScreenState(
                 R.string.lap_text_format_full,
                 it.number.toString(),
                 formatTime(
-                    Time.fromTimeInMillis(it.duration),
+                    Time.fromMillis(it.duration),
                     alwaysShowMillis = true
                 ),
-                formatTime(Time.fromTimeInMillis(it.lapTime), alwaysShowMillis = true)
+                formatTime(Time.fromMillis(it.lapTime), alwaysShowMillis = true)
             )
         } ?: emptyFlow()
 

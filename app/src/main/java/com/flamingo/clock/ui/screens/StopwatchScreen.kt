@@ -87,10 +87,10 @@ import com.flamingo.clock.data.getPrependedString
 import com.flamingo.clock.ui.ContentOrientation
 import com.flamingo.clock.ui.states.StopwatchScreenState
 import com.flamingo.clock.ui.states.rememberStopwatchScreenState
+import com.flamingo.clock.ui.theme.ButtonSizeVertical
+import com.flamingo.clock.ui.theme.ButtonSizeHorizontal
 import kotlinx.coroutines.delay
 
-private val ButtonHeightHorizontal = 88.dp
-private val ButtonHeightVertical = 64.dp
 private const val ButtonAspectRatioAnimation = "Button aspect ratio animation"
 private const val ButtonCornerRadiusAnimation = "Button corner radius animation"
 
@@ -365,7 +365,7 @@ fun ProgressWithTime(
                         textAlign = TextAlign.End
                     )
                     Text(
-                        text = getPrependedString(time.milliseconds),
+                        text = getPrependedString(time.millisecond),
                         fontSize = TextUnit(
                             when (orientation) {
                                 ContentOrientation.Vertical -> 32f
@@ -448,7 +448,7 @@ fun HorizontalControlButtons(
         val leftButtonAlpha by animateFloatAsState(targetValue = if (hasStarted) 1f else 0f)
         IconButton(
             modifier = Modifier
-                .size(2 * ButtonHeightHorizontal / 3)
+                .size(2 * ButtonSizeVertical / 3)
                 .clip(CircleShape)
                 .alpha(leftButtonAlpha),
             onClick = onResetRequest,
@@ -464,11 +464,11 @@ fun HorizontalControlButtons(
             if (it) 1.5f else 1f
         }
         val cornerRadius by transition.animateDp(label = ButtonCornerRadiusAnimation) {
-            ButtonHeightHorizontal / (if (it) 4 else 2)
+            ButtonSizeVertical / (if (it) 4 else 2)
         }
         IconButton(
             modifier = Modifier
-                .height(ButtonHeightHorizontal)
+                .height(ButtonSizeVertical)
                 .aspectRatio(aspectRatio)
                 .clip(RoundedCornerShape(cornerRadius)),
             onClick = onToggleState,
@@ -484,7 +484,7 @@ fun HorizontalControlButtons(
         val rightButtonAlpha by animateFloatAsState(targetValue = if (hasStarted && isRunning) 1f else 0f)
         IconButton(
             modifier = Modifier
-                .size(2 * ButtonHeightHorizontal / 3)
+                .size(2 * ButtonSizeVertical / 3)
                 .clip(CircleShape)
                 .alpha(rightButtonAlpha),
             onClick = onLapSetRequest,
@@ -509,7 +509,7 @@ fun VerticalControlButtons(
     modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = modifier.width(1.5 * ButtonHeightVertical),
+        modifier = modifier.width(1.5 * ButtonSizeHorizontal),
         verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -517,7 +517,7 @@ fun VerticalControlButtons(
         IconButton(
             modifier = Modifier
                 .alpha(topButtonAlpha)
-                .size(4 * ButtonHeightVertical / 5)
+                .size(4 * ButtonSizeHorizontal / 5)
                 .clip(CircleShape),
             onClick = onLapSetRequest,
             colors = IconButtonDefaults.filledIconButtonColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)
@@ -532,11 +532,11 @@ fun VerticalControlButtons(
             if (it) 1.25f else 1f
         }
         val cornerRadius by transition.animateDp(label = ButtonCornerRadiusAnimation) {
-            ButtonHeightVertical / (if (it) 4 else 2)
+            ButtonSizeHorizontal / (if (it) 4 else 2)
         }
         IconButton(
             modifier = Modifier
-                .height(ButtonHeightVertical)
+                .height(ButtonSizeHorizontal)
                 .aspectRatio(aspectRatio)
                 .clip(RoundedCornerShape(cornerRadius)),
             onClick = onToggleState,
@@ -552,7 +552,7 @@ fun VerticalControlButtons(
         val bottomButtonAlpha by animateFloatAsState(targetValue = if (hasStarted) 1f else 0f)
         IconButton(
             modifier = Modifier
-                .size(4 * ButtonHeightVertical / 5)
+                .size(4 * ButtonSizeHorizontal / 5)
                 .clip(CircleShape)
                 .alpha(bottomButtonAlpha),
             onClick = onResetRequest,

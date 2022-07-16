@@ -14,16 +14,9 @@
  * limitations under the License.
  */
 
-package com.flamingo.clock.data
+package com.flamingo.clock.ui.theme
 
-fun formatTime(
-    time: Time,
-    alwaysShowHours: Boolean = false,
-    alwaysShowMinutes: Boolean = false,
-    alwaysShowMillis: Boolean = false
-) = (if (time.hour > 0 || alwaysShowHours) "${getPrependedString(time.hour)}:" else "") +
-        (if (time.minute > 0 || alwaysShowMinutes) "${getPrependedString(time.minute)}:" else "") +
-        getPrependedString(time.second) +
-        (if (alwaysShowMillis) ".${getPrependedString(time.millisecond)}" else "")
+import androidx.compose.ui.unit.dp
 
-fun getPrependedString(time: Int) = if (time < 10) "0$time" else time.toString()
+val ButtonSizeVertical = 88.dp
+val ButtonSizeHorizontal = 64.dp
