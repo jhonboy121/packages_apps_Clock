@@ -323,8 +323,8 @@ fun ProgressWithTime(
     Box(modifier = modifier) {
         val progress = remember { Animatable(0f) }
         LaunchedEffect(lapNumber) {
+            progress.snapTo(0f)
             if (lapNumber > 1) {
-                progress.snapTo(0f)
                 progress.animateTo(1f, animationSpec = tween(durationMillis = 1000))
             }
         }
