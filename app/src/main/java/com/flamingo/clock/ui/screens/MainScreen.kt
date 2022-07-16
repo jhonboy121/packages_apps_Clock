@@ -29,6 +29,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -58,12 +61,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.PopupProperties
 import androidx.navigation.NavHostController
 
 import com.flamingo.clock.R
 import com.flamingo.clock.ui.ContentOrientation
 import com.flamingo.clock.ui.NavigationType
+import com.flamingo.clock.ui.Settings
 
 import kotlinx.parcelize.Parcelize
 
@@ -88,7 +94,10 @@ fun MainScreen(
         topBar = {
             TopBar(
                 labelId = selectedPage.labelId,
-                topAppBarScrollBehavior = topAppBarScrollBehavior
+                topAppBarScrollBehavior = topAppBarScrollBehavior,
+                onSettingsOpenRequest = {
+                    navController.navigate(Settings.path)
+                }
             )
         },
     ) { padding ->
@@ -141,6 +150,7 @@ fun MainScreen(
 fun TopBar(
     labelId: Int,
     topAppBarScrollBehavior: TopAppBarScrollBehavior,
+    onSettingsOpenRequest: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     SmallTopAppBar(
@@ -151,7 +161,36 @@ fun TopBar(
             }
         },
         actions = {
-            IconButton(onClick = { /*TODO*/ }) {
+            var showMenu by remember { mutableStateOf(false) }
+            DropdownMenu(
+                modifier = Modifier.fillMaxWidth(fraction = 0.35f),
+                expanded = showMenu,
+                onDismissRequest = { showMenu = false },
+                properties = PopupProperties(
+                    dismissOnBackPress = true,
+                    dismissOnClickOutside = true
+                )
+            ) {
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = stringResource(id = R.string.settings),
+                            fontWeight = FontWeight.Bold
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Filled.Settings,
+                            contentDescription = stringResource(id = R.string.settings_icon_content_desc)
+                        )
+                    },
+                    onClick = {
+                        showMenu = false
+                        onSettingsOpenRequest()
+                    },
+                )
+            }
+            IconButton(onClick = { showMenu = true }) {
                 Icon(
                     imageVector = Icons.Filled.Menu,
                     contentDescription = stringResource(id = R.string.menu_button_content_desc)

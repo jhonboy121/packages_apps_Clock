@@ -97,4 +97,5 @@ dependencies {
     implementation 'com.google.protobuf:protobuf-javalite:3.18.0'
     implementation "io.insert-koin:koin-android:$koin_version"
     implementation "io.insert-koin:koin-androidx-compose:$koin_version"
+    implementation files("libs/support-compose.aar")
 }

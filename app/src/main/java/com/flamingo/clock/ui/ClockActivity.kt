@@ -41,6 +41,7 @@ import androidx.navigation.NavHostController
 import com.flamingo.clock.ui.screens.AddCityTimeScreen
 
 import com.flamingo.clock.ui.screens.MainScreen
+import com.flamingo.clock.ui.screens.SettingsScreen
 import com.flamingo.clock.ui.theme.ClockTheme
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
@@ -79,7 +80,8 @@ class ClockActivity : ComponentActivity() {
             Main.path,
             exitTransition = {
                 when (targetState.destination.route) {
-                    AddCityTime.path -> slideOutOfContainer(
+                    AddCityTime.path,
+                    Settings.path -> slideOutOfContainer(
                         AnimatedContentScope.SlideDirection.Start,
                         tween(TransitionAnimationDuration)
                     )
@@ -88,7 +90,8 @@ class ClockActivity : ComponentActivity() {
             },
             popEnterTransition = {
                 when (initialState.destination.route) {
-                    AddCityTime.path -> slideIntoContainer(
+                    AddCityTime.path,
+                    Settings.path -> slideIntoContainer(
                         AnimatedContentScope.SlideDirection.End,
                         tween(TransitionAnimationDuration)
                     )
@@ -130,6 +133,12 @@ class ClockActivity : ComponentActivity() {
                 isEnterAnimationRunning = transition.currentState == EnterExitState.PreEnter
             )
         }
+        animatedComposable(
+            route = Settings.path,
+            home = Main.path
+        ) {
+            SettingsScreen(navController = navController, modifier = Modifier.fillMaxSize())
+        }
     }
 
     @OptIn(ExperimentalAnimationApi::class)
@@ -166,6 +175,7 @@ class ClockActivity : ComponentActivity() {
 sealed class Route(val path: String)
 object Main : Route("main")
 object AddCityTime : Route("add_city_time")
+object Settings : Route("settings")
 
 sealed interface NavigationType {
     object BottomBar : NavigationType
