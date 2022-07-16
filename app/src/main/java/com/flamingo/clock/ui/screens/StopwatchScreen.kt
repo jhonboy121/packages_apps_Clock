@@ -150,7 +150,7 @@ fun StopwatchScreen(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalUnitApi::class)
 @Composable
 private fun VerticalScreenContent(
     time: Time,
@@ -175,7 +175,8 @@ private fun VerticalScreenContent(
             time = time,
             orientation = ContentOrientation.Vertical,
             blinkTime = hasStarted && !isRunning,
-            lapNumber = currentLap.first
+            lapNumber = currentLap.first,
+            fontSize = TextUnit(48f, TextUnitType.Sp)
         )
         val listTransition = updateTransition(targetState = laps.isNotEmpty(), label = null)
         val weight by listTransition.animateFloat(label = ListWeightAnimation, transitionSpec = {
@@ -229,7 +230,7 @@ private fun VerticalScreenContent(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalUnitApi::class)
 @Composable
 private fun HorizontalScreenContent(
     time: Time,
@@ -254,7 +255,8 @@ private fun HorizontalScreenContent(
             modifier = Modifier
                 .fillMaxSize()
                 .weight(1f),
-            lapNumber = currentLap.first
+            lapNumber = currentLap.first,
+            fontSize = TextUnit(30f, TextUnitType.Sp)
         )
         val listTransition = updateTransition(targetState = laps.isNotEmpty(), label = null)
         val weight by listTransition.animateFloat(label = ListWeightAnimation, transitionSpec = {
@@ -312,10 +314,11 @@ private fun HorizontalScreenContent(
 @Composable
 fun ProgressWithTime(
     time: Time,
+    fontSize: TextUnit,
     orientation: ContentOrientation,
     blinkTime: Boolean,
-    modifier: Modifier = Modifier,
     lapNumber: Int,
+    modifier: Modifier = Modifier,
 ) {
     Box(modifier = modifier) {
         val progress = remember { Animatable(0f) }
@@ -330,7 +333,7 @@ fun ProgressWithTime(
                 .then(
                     when (orientation) {
                         ContentOrientation.Vertical -> Modifier.fillMaxWidth(0.75f)
-                        ContentOrientation.Horizontal -> Modifier.fillMaxHeight(0.75f)
+                        ContentOrientation.Horizontal -> Modifier.fillMaxHeight(0.95f)
                     }
                 )
                 .align(Alignment.Center),
@@ -354,25 +357,13 @@ fun ProgressWithTime(
                     Text(
                         modifier = Modifier.animateContentSize(),
                         text = formatTime(time),
-                        fontSize = TextUnit(
-                            when (orientation) {
-                                ContentOrientation.Vertical -> 50f
-                                ContentOrientation.Horizontal -> 28f
-                            },
-                            TextUnitType.Sp
-                        ),
+                        fontSize = fontSize,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.End
                     )
                     Text(
                         text = getPrependedString(time.millisecond),
-                        fontSize = TextUnit(
-                            when (orientation) {
-                                ContentOrientation.Vertical -> 32f
-                                ContentOrientation.Horizontal -> 20f
-                            },
-                            TextUnitType.Sp
-                        ),
+                        fontSize = TextUnit(value = (fontSize.value * 2) / 3, type = fontSize.type),
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.End
                     )
