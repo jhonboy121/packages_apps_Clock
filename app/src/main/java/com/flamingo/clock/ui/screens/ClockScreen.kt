@@ -79,6 +79,7 @@ import androidx.compose.ui.unit.times
 import androidx.navigation.NavController
 
 import com.flamingo.clock.R
+import com.flamingo.clock.data.CityTimeZone
 import com.flamingo.clock.data.ClockStyle
 import com.flamingo.clock.data.DEFAULT_CLOCK_STYLE
 import com.flamingo.clock.data.DEFAULT_SHOW_SECONDS
@@ -97,6 +98,7 @@ import com.flamingo.clock.ui.theme.ButtonSizeVertical
 import com.flamingo.clock.ui.theme.ButtonSizeHorizontal
 
 import kotlin.math.roundToInt
+import kotlinx.coroutines.flow.map
 
 @Composable
 fun ClockScreen(
@@ -118,6 +120,8 @@ fun ClockScreen(
     val deleteCallback by rememberUpdatedState(newValue = { cityTime: CityTime ->
         state.removeSavedCityTime(cityTime)
     })
+    val homeTime by state.homeTime.collectAsState(initial = null)
+    val deleteHomeTimeCallback by rememberUpdatedState(newValue = { state.removeHomeTimeZone() })
     when (orientation) {
         ContentOrientation.Horizontal -> HorizontalContent(
             modifier = modifier.padding(horizontal = 24.dp),
@@ -129,7 +133,9 @@ fun ClockScreen(
             selectedCityTimes = selectedCityTimes,
             onShowAddCityTimePageRequest = addCityTimeCallback,
             onDeleteRequest = deleteCallback,
-            nestedScrollConnection = nestedScrollConnection
+            nestedScrollConnection = nestedScrollConnection,
+            homeTime = homeTime,
+            onDeleteHomeTimeRequest = deleteHomeTimeCallback
         )
         ContentOrientation.Vertical -> VerticalContent(
             modifier = modifier.padding(horizontal = 24.dp),
@@ -141,7 +147,9 @@ fun ClockScreen(
             selectedCityTimes = selectedCityTimes,
             onShowAddCityTimePageRequest = addCityTimeCallback,
             onDeleteRequest = deleteCallback,
-            nestedScrollConnection = nestedScrollConnection
+            nestedScrollConnection = nestedScrollConnection,
+            homeTime = homeTime,
+            onDeleteHomeTimeRequest = deleteHomeTimeCallback
         )
     }
 }
@@ -158,6 +166,8 @@ private fun HorizontalContent(
     onShowAddCityTimePageRequest: () -> Unit,
     onDeleteRequest: (CityTime) -> Unit,
     nestedScrollConnection: NestedScrollConnection,
+    homeTime: CityTime?,
+    onDeleteHomeTimeRequest: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -183,11 +193,25 @@ private fun HorizontalContent(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             contentPadding = PaddingValues(vertical = 8.dp)
         ) {
+            if (homeTime != null) {
+                item(key = homeTime.id) {
+                    CityTimeItem(
+                        cityTime = homeTime,
+                        timeFormat = timeFormat,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .animateItemPlacement(),
+                        onDeleteRequest = onDeleteHomeTimeRequest
+                    )
+                }
+            }
             items(selectedCityTimes, key = { it.id }) {
                 CityTimeItem(
                     cityTime = it,
                     timeFormat = timeFormat,
-                    modifier = Modifier.fillMaxWidth().animateItemPlacement(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .animateItemPlacement(),
                     onDeleteRequest = {
                         onDeleteRequest(it)
                     }
@@ -213,6 +237,8 @@ private fun VerticalContent(
     onShowAddCityTimePageRequest: () -> Unit,
     onDeleteRequest: (CityTime) -> Unit,
     nestedScrollConnection: NestedScrollConnection,
+    homeTime: CityTime?,
+    onDeleteHomeTimeRequest: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box(modifier = modifier) {
@@ -235,11 +261,25 @@ private fun VerticalContent(
                         .padding(vertical = 32.dp)
                 )
             }
+            if (homeTime != null) {
+                item(key = homeTime.id) {
+                    CityTimeItem(
+                        cityTime = homeTime,
+                        timeFormat = timeFormat,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .animateItemPlacement(),
+                        onDeleteRequest = onDeleteHomeTimeRequest
+                    )
+                }
+            }
             items(selectedCityTimes, key = { it.id }) {
                 CityTimeItem(
                     cityTime = it,
                     timeFormat = timeFormat,
-                    modifier = Modifier.fillMaxWidth().animateItemPlacement(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .animateItemPlacement(),
                     onDeleteRequest = {
                         onDeleteRequest(it)
                     }
@@ -436,7 +476,7 @@ private fun CityTimeItem(
                     with(painter) {
                         draw(
                             size = intrinsicSize,
-                            alpha = if (swipeableState.progress.to  == SwipeState.LEFT) 1f else 0f
+                            alpha = if (swipeableState.progress.to == SwipeState.LEFT) 1f else 0f
                         )
                     }
                 }

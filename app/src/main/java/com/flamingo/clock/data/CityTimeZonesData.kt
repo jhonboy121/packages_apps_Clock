@@ -43,8 +43,22 @@ class CityTimeZonesData(private val context: Context) {
     private val cacheMutex = Mutex()
     private val cityTimezoneCache = mutableListOf<CityTimeZone>()
 
+    suspend fun getAllTimeZones(): Result<List<CityTimeZone>> {
+        if (cacheMutex.isLocked) return Result.failure(Throwable(context.getString(R.string.resource_locked)))
+        return cacheMutex.withLock {
+            if (cityTimezoneCache.isEmpty()) {
+                populateCacheLocked().onFailure {
+                    return@withLock Result.failure(it)
+                }
+            }
+            withContext(Dispatchers.Default) {
+                Result.success(cityTimezoneCache.toList())
+            }
+        }
+    }
+
     suspend fun findCityTimezoneInfo(keyword: String?): Result<List<CityTimeZone>> {
-        if (cacheMutex.isLocked) return Result.failure(Throwable(context.getString(R.string.search_in_progress)))
+        if (cacheMutex.isLocked) return Result.failure(Throwable(context.getString(R.string.resource_locked)))
         return cacheMutex.withLock {
             withContext(Dispatchers.Default) {
                 if (cityTimezoneCache.isEmpty()) {

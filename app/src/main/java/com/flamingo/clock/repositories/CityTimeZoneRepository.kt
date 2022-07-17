@@ -21,7 +21,11 @@ import com.flamingo.clock.data.CityTimeZonesData
 
 class CityTimeZoneRepository(private val cityTimeZonesData: CityTimeZonesData) {
 
-    suspend fun findCityTimezoneInfo(keyword: String?): Result<List<CityTimeZone>> {
+    suspend fun getAllTimeZoneInfo(): Result<List<CityTimeZone>> {
+        return cityTimeZonesData.getAllTimeZones()
+    }
+
+    suspend fun findCityTimeZoneInfo(keyword: String?): Result<List<CityTimeZone>> {
         return cityTimeZonesData.findCityTimezoneInfo(keyword)
     }
 }

@@ -92,6 +92,18 @@ fun SettingsScreen(
                 }
             )
         }
+        item(key = R.string.home_time_zone) {
+            val allTimeZones by state.timeZoneEntries.collectAsState(emptyList())
+            val homeTimeZone by state.homeTimeZone.collectAsState(initial = null)
+            ListPreference(
+                title = stringResource(id = R.string.home_time_zone),
+                entries = allTimeZones,
+                value = homeTimeZone,
+                onEntrySelected = {
+                    state.setHomeTimeZone(it)
+                }
+            )
+        }
         item(key = R.string.change_date_and_time) {
             Preference(
                 title = stringResource(id = R.string.change_date_and_time),

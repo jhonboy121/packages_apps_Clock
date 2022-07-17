@@ -38,6 +38,9 @@ class SettingsRepository(context: Context) {
     val timeFormat: Flow<TimeFormat>
         get() = settings.data.map { it.timeFormat }
 
+    val homeTimeZone: Flow<String>
+        get() = settings.data.map { it.homeTimeZone }
+
     suspend fun setClockStyle(clockStyle: ClockStyle) {
         settings.updateData {
             it.toBuilder()
@@ -58,6 +61,22 @@ class SettingsRepository(context: Context) {
         settings.updateData {
             it.toBuilder()
                 .setTimeFormat(timeFormat)
+                .build()
+        }
+    }
+
+    suspend fun setHomeTimeZone(homeTimeZone: String) {
+        settings.updateData {
+            it.toBuilder()
+                .setHomeTimeZone(homeTimeZone)
+                .build()
+        }
+    }
+
+    suspend fun removeHomeTimeZone() {
+        settings.updateData {
+            it.toBuilder()
+                .clearHomeTimeZone()
                 .build()
         }
     }

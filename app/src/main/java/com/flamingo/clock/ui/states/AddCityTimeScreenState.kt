@@ -78,7 +78,7 @@ class AddCityTimeScreenState(
 
     fun findCityTime(keyword: String?) {
         coroutineScope.launch {
-            cityTimezoneRepository.findCityTimezoneInfo(keyword).onSuccess {
+            cityTimezoneRepository.findCityTimeZoneInfo(keyword).onSuccess {
                 _filteredCityTimes.value = it
             }
         }

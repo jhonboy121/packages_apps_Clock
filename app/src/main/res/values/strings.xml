@@ -25,7 +25,7 @@
 
     <!-- Clock -->
     <string name="clock">Clock</string>
-    <string name="search_in_progress">A search is already in progress, try again later</string>
+    <string name="resource_locked">Resource locked by another coroutine, try again later</string>
     <string name="add_city_time_content_desc">Add city time button</string>
     <string name="add_city_time_back_button_content_desc">Back button in add city time screen</string>
     <string name="search_for_a_city">Search for a city</string>
@@ -33,6 +33,7 @@
     <string name="tomorrow">Tomorrow</string>
     <string name="yesterday">Yesterday</string>
     <string name="delete_city_time_icon_content_desc">Delete city time icon</string>
+    <string name="home">Home</string>
 
     <!-- Timer -->
     <string name="timer">Timer</string>
@@ -64,5 +65,6 @@
     <string name="twelve_hour">12 hour</string>
     <string name="twenty_four_hour">24 hour</string>
     <string name="change_date_and_time">Change date and time</string>
+    <string name="home_time_zone">Home time zone</string>
 
 </resources>

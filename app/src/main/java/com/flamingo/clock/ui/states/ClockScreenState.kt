@@ -16,22 +16,24 @@
 
 package com.flamingo.clock.ui.states
 
-import android.content.res.Configuration
+import android.content.Context
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 
+import com.flamingo.clock.R
 import com.flamingo.clock.data.ClockStyle
 import com.flamingo.clock.data.Date
 import com.flamingo.clock.data.Resolution
 import com.flamingo.clock.data.Time
 import com.flamingo.clock.data.TimeFormat
+import com.flamingo.clock.data.TimeZoneDifference
 import com.flamingo.clock.repositories.SettingsRepository
 import com.flamingo.clock.repositories.UserDataRepository
 
-import java.util.Locale
+import java.time.ZoneId
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -52,7 +54,7 @@ class ClockScreenState(
     private val userDataRepository: UserDataRepository,
     private val settingsRepository: SettingsRepository,
     private val coroutineScope: CoroutineScope,
-    private val configuration: Configuration
+    context: Context,
 ) {
 
     val cityTimes: Flow<List<CityTime>>
@@ -71,6 +73,8 @@ class ClockScreenState(
     val showSeconds: Flow<Boolean>
         get() = settingsRepository.showSeconds
 
+    private val locale = context.resources.configuration.locales[0]
+
     private val _date = MutableStateFlow(Date.now(locale))
     val date: StateFlow<Date>
         get() = _date
@@ -81,8 +85,27 @@ class ClockScreenState(
     val timeFormat: Flow<TimeFormat>
         get() = settingsRepository.timeFormat
 
-    private val locale: Locale
-        get() = configuration.locales[0]
+    private val homeTimeZoneName = context.getString(R.string.home)
+    val homeTime: Flow<CityTime?>
+        get() = settingsRepository.homeTimeZone.map {
+            if (it.isBlank()) {
+                return@map null
+            }
+            val time = Time.now(
+                ZoneId.of(it),
+                resolution = Resolution.MINUTE,
+                ignoreTimeZoneDifference = false
+            )
+            if (time.timeZoneDifference is TimeZoneDifference.Zero) {
+                return@map null
+            }
+            CityTime(
+                city = homeTimeZoneName,
+                country = homeTimeZoneName,
+                timezone = it,
+                time = time
+            )
+        }
 
     init {
         coroutineScope.launch {
@@ -95,6 +118,12 @@ class ClockScreenState(
     fun removeSavedCityTime(cityTime: CityTime) {
         coroutineScope.launch {
             userDataRepository.removeCityTime(cityTime.toCityTimeZone())
+        }
+    }
+
+    fun removeHomeTimeZone() {
+        coroutineScope.launch {
+            settingsRepository.removeHomeTimeZone()
         }
     }
 
@@ -111,17 +140,17 @@ fun rememberClockScreenState(
     userDataRepository: UserDataRepository = get(),
     settingsRepository: SettingsRepository = get(),
     coroutineScope: CoroutineScope = rememberCoroutineScope(),
-    configuration: Configuration = LocalConfiguration.current
+    context: Context = LocalContext.current
 ) = remember(
     userDataRepository,
     settingsRepository,
     coroutineScope,
-    configuration
+    context
 ) {
     ClockScreenState(
         userDataRepository = userDataRepository,
         settingsRepository = settingsRepository,
         coroutineScope = coroutineScope,
-        configuration = configuration
+        context = context
     )
 }

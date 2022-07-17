@@ -23,6 +23,7 @@ message Settings {
   ClockStyle clock_style = 1;
   bool show_seconds = 2;
   TimeFormat time_format = 3;
+  string home_time_zone = 4;
 }
 
 enum ClockStyle {

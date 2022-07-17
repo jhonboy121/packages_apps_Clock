@@ -26,16 +26,26 @@ import androidx.compose.ui.platform.LocalContext
 
 import com.flamingo.clock.data.ClockStyle
 import com.flamingo.clock.data.TimeFormat
+import com.flamingo.clock.repositories.CityTimeZoneRepository
 import com.flamingo.clock.repositories.SettingsRepository
+import com.flamingo.support.compose.ui.preferences.Entry
+
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.TextStyle
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 import org.koin.androidx.compose.get
 
 class SettingsScreenState(
     private val settingsRepository: SettingsRepository,
+    private val cityTimeZoneRepository: CityTimeZoneRepository,
     private val coroutineScope: CoroutineScope,
     private val context: Context
 ) {
@@ -47,6 +57,49 @@ class SettingsScreenState(
 
     val timeFormat: Flow<TimeFormat>
         get() = settingsRepository.timeFormat
+
+    private val locale = context.resources.configuration.locales[0]
+
+    private val _timeZoneEntries = MutableStateFlow<List<Entry<String>>>(emptyList())
+    val timeZoneEntries: Flow<List<Entry<String>>>
+        get() = _timeZoneEntries
+
+    val homeTimeZone: Flow<String?>
+        get() = settingsRepository.homeTimeZone.map { it.ifBlank { null } }
+
+    init {
+        coroutineScope.launch(Dispatchers.Default) {
+            loadAllTimeZones()
+        }
+    }
+
+    private suspend fun loadAllTimeZones() {
+        val instant = Instant.now()
+        cityTimeZoneRepository.getAllTimeZoneInfo().onSuccess { list ->
+            val processedList = list.map {
+                ZoneId.of(it.timezone).normalized()
+            }.sortedBy {
+                it.rules.getOffset(instant).totalSeconds
+            }.map {
+                val offset = it.rules.getOffset(instant)
+                val offsetText = if (offset.totalSeconds == 0)
+                    "+0:00"
+                else
+                    offset.getDisplayName(TextStyle.FULL, locale)
+                val name = it.getDisplayName(TextStyle.FULL, locale)
+                Entry("(GMT$offsetText) $name", it.id)
+            }
+            val addedKeys = mutableListOf<String>()
+            val filteredList = mutableListOf<Entry<String>>()
+            processedList.forEach {
+                if (!addedKeys.contains(it.name)) {
+                    addedKeys.add(it.name)
+                    filteredList.add(it)
+                }
+            }
+            _timeZoneEntries.value = filteredList.toList()
+        }
+    }
 
     fun setClockStyle(clockStyle: ClockStyle) {
         coroutineScope.launch {
@@ -66,6 +119,12 @@ class SettingsScreenState(
         }
     }
 
+    fun setHomeTimeZone(homeTimeZone: String) {
+        coroutineScope.launch {
+            settingsRepository.setHomeTimeZone(homeTimeZone)
+        }
+    }
+
     fun openDateAndTimeSettings() {
         context.startActivity(settingsIntent)
     }
@@ -82,11 +141,13 @@ class SettingsScreenState(
 @Composable
 fun rememberSettingsScreenState(
     settingsRepository: SettingsRepository = get(),
+    cityTimeZoneRepository: CityTimeZoneRepository = get(),
     coroutineScope: CoroutineScope = rememberCoroutineScope(),
     context: Context = LocalContext.current
-) = remember(settingsRepository, coroutineScope, context) {
+) = remember(settingsRepository, cityTimeZoneRepository, coroutineScope, context) {
     SettingsScreenState(
         settingsRepository = settingsRepository,
+        cityTimeZoneRepository = cityTimeZoneRepository,
         coroutineScope = coroutineScope,
         context = context
     )
