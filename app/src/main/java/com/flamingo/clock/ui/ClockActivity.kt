@@ -25,28 +25,34 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.material3.Surface
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.core.view.WindowCompat
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
-import com.flamingo.clock.ui.screens.AddCityTimeScreen
 
+import com.flamingo.clock.ui.screens.AddCityTimeScreen
 import com.flamingo.clock.ui.screens.MainScreen
 import com.flamingo.clock.ui.screens.SettingsScreen
 import com.flamingo.clock.ui.theme.ClockTheme
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 private const val TransitionAnimationDuration = 500
 
@@ -55,17 +61,15 @@ class ClockActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class, ExperimentalAnimationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         setContent {
             ClockTheme {
-                val systemUiController = rememberSystemUiController()
-                val surfaceColor = MaterialTheme.colorScheme.surface
-                LaunchedEffect(Unit) {
-                    systemUiController.setSystemBarsColor(surfaceColor)
-                }
-                val windowSizeClass = calculateWindowSizeClass(activity = this)
-                val navController = rememberAnimatedNavController()
-                AnimatedNavHost(navController = navController, startDestination = Main.path) {
-                    mainGraph(windowSizeClass = windowSizeClass, navController = navController)
+                Surface(modifier = Modifier.fillMaxSize()) {
+                    val windowSizeClass = calculateWindowSizeClass(activity = this)
+                    val navController = rememberAnimatedNavController()
+                    AnimatedNavHost(navController = navController, startDestination = Main.path) {
+                        mainGraph(windowSizeClass = windowSizeClass, navController = navController)
+                    }
                 }
             }
         }
@@ -117,7 +121,9 @@ class ClockActivity : ComponentActivity() {
                     ContentOrientation.Vertical
                 }
             MainScreen(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .systemBarsPadding()
+                    .fillMaxSize(),
                 navigationType = navigationType,
                 orientation = contentOrientation,
                 navController = navController
@@ -127,9 +133,25 @@ class ClockActivity : ComponentActivity() {
             route = AddCityTime.path,
             home = Main.path
         ) {
+            val sideNavigationBarPadding =
+                with(LocalDensity.current) {
+                    WindowInsets.navigationBars.getLeft(
+                        this,
+                        LocalLayoutDirection.current
+                    ).toDp()
+                }
             AddCityTimeScreen(
                 navController = navController,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .statusBarsPadding()
+                    .then(
+                        if (sideNavigationBarPadding.value != 0f) {
+                            Modifier.navigationBarsPadding()
+                        } else {
+                            Modifier
+                        }
+                    )
+                    .fillMaxSize(),
                 isEnterAnimationRunning = transition.currentState == EnterExitState.PreEnter
             )
         }

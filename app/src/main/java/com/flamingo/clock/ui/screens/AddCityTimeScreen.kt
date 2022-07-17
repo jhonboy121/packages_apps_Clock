@@ -21,10 +21,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -128,10 +131,13 @@ fun AddCityTimeScreen(
             }
             val cityTimesList by state.cityTimes.collectAsState(emptyList())
             val timeFormat by state.timeFormat.collectAsState(initial = DEFAULT_TIME_FORMAT)
+            val bottomNavigationBarPadding =
+                with(LocalDensity.current) { WindowInsets.navigationBars.getBottom(this).toDp() }
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .weight(1f)
+                    .weight(1f),
+                contentPadding = PaddingValues(bottom = bottomNavigationBarPadding)
             ) {
                 items(cityTimesList, key = { it.city + it.country + it.timezone }) {
                     CityTimeItem(

@@ -17,13 +17,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:name=".ClockApp"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/Theme.Material3.DayNight.NoActionBar">
+        android:theme="@style/ClockTheme">
 
         <activity
             android:name=".ui.ClockActivity"
