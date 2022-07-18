@@ -74,6 +74,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.ExperimentalUnitApi
 import androidx.compose.ui.unit.TextUnit
@@ -90,6 +91,7 @@ import com.flamingo.clock.ui.states.StopwatchScreenState
 import com.flamingo.clock.ui.states.rememberStopwatchScreenState
 import com.flamingo.clock.ui.theme.ButtonSizeVertical
 import com.flamingo.clock.ui.theme.ButtonSizeHorizontal
+
 import kotlinx.coroutines.delay
 
 private const val ButtonAspectRatioAnimation = "Button aspect ratio animation"
@@ -211,10 +213,20 @@ private fun VerticalScreenContent(
                 verticalArrangement = Arrangement.Top
             ) {
                 item(key = currentLap.first) {
-                    Text(currentLap.second, modifier = Modifier.animateItemPlacement())
+                    Text(
+                        currentLap.second,
+                        modifier = Modifier.animateItemPlacement(),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
                 items(items = laps, key = { it }) {
-                    Text(it, modifier = Modifier.animateItemPlacement())
+                    Text(
+                        it,
+                        modifier = Modifier.animateItemPlacement(),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
             }
         }
@@ -291,10 +303,20 @@ private fun HorizontalScreenContent(
                 contentPadding = PaddingValues(vertical = 8.dp)
             ) {
                 item(key = currentLap.first) {
-                    Text(currentLap.second, modifier = Modifier.animateItemPlacement())
+                    Text(
+                        currentLap.second,
+                        modifier = Modifier.animateItemPlacement(),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
                 items(items = laps, key = { it }) {
-                    Text(it, modifier = Modifier.animateItemPlacement())
+                    Text(
+                        it,
+                        modifier = Modifier.animateItemPlacement(),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
             }
         }
