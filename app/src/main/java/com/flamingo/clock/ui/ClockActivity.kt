@@ -115,7 +115,8 @@ class ClockActivity : ComponentActivity() {
                     }
                 }
             val contentOrientation =
-                if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded) {
+                if (windowSizeClass.heightSizeClass == WindowHeightSizeClass.Compact ||
+                        windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded) {
                     ContentOrientation.Horizontal
                 } else {
                     ContentOrientation.Vertical
