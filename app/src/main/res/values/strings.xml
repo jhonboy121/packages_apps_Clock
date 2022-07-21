@@ -37,6 +37,8 @@
 
     <!-- Timer -->
     <string name="timer">Timer</string>
+    <string name="job_with_id_exists">Job with same id already exists</string>
+    <string name="timer_with_id_does_not_exist">Timer with given id does not exist</string>
 
     <!-- Stopwatch -->
     <string name="stopwatch">Stopwatch</string>
