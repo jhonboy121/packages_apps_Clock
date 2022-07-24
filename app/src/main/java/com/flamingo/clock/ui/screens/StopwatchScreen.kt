@@ -29,7 +29,6 @@ import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -62,20 +61,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.ExperimentalUnitApi
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
@@ -97,10 +88,10 @@ import kotlinx.coroutines.delay
 private const val ButtonAspectRatioAnimation = "Button aspect ratio animation"
 private const val ButtonCornerRadiusAnimation = "Button corner radius animation"
 
-private const val EnterExpansionDuration = 500
-private const val EnterFadeInDuration = 500
-private const val ExitShrinkDuration = 900
-private const val ExitFadeOutDuration = 100
+internal const val EnterExpansionDuration = 500
+internal const val EnterFadeInDuration = 500
+internal const val ExitShrinkDuration = 900
+internal const val ExitFadeOutDuration = 100
 private const val ListWeightAnimation = "List weight animation"
 private const val ListAlphaAnimation = "List alpha animation"
 
@@ -395,57 +386,9 @@ fun ProgressWithTime(
     }
 }
 
-@Composable
-fun CircularProgressBar(
-    progress: Float,
-    modifier: Modifier = Modifier,
-    trackColor: Color = MaterialTheme.colorScheme.secondaryContainer,
-    progressColor: Color = MaterialTheme.colorScheme.primary,
-    thickness: Dp = 8.dp,
-    content: @Composable BoxScope.() -> Unit,
-) {
-    val thicknessPx = with(LocalDensity.current) { thickness.toPx() }
-    Box(
-        modifier = modifier
-            .aspectRatio(1f)
-            .drawWithContent {
-                drawArc(
-                    trackColor,
-                    0f,
-                    360f,
-                    true,
-                    size = Size(size.width - 2 * thicknessPx, size.height - 2 * thicknessPx),
-                    topLeft = Offset(x = thicknessPx, y = thicknessPx),
-                    style = Stroke(width = thicknessPx)
-                )
-                drawArc(
-                    progressColor,
-                    -90f,
-                    progress * 180,
-                    false,
-                    size = Size(size.width - 2 * thicknessPx, size.height - 2 * thicknessPx),
-                    topLeft = Offset(x = thicknessPx, y = thicknessPx),
-                    style = Stroke(width = thicknessPx)
-                )
-                drawArc(
-                    progressColor,
-                    90 * (progress * 2 - 1),
-                    progress * 180f,
-                    false,
-                    size = Size(size.width - 2 * thicknessPx, size.height - 2 * thicknessPx),
-                    topLeft = Offset(x = thicknessPx, y = thicknessPx),
-                    style = Stroke(width = thicknessPx, cap = StrokeCap.Round)
-                )
-                drawContent()
-            },
-        content = content,
-        contentAlignment = Alignment.Center
-    )
-}
-
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun HorizontalControlButtons(
+private fun HorizontalControlButtons(
     hasStarted: Boolean,
     isRunning: Boolean,
     onToggleState: () -> Unit,
@@ -490,7 +433,7 @@ fun HorizontalControlButtons(
             AnimatedContent(targetState = isRunning) {
                 Icon(
                     painter = painterResource(id = if (it) R.drawable.baseline_pause_24 else R.drawable.baseline_play_arrow_24),
-                    contentDescription = stringResource(id = R.string.start_stop_button_content_desc)
+                    contentDescription = stringResource(id = R.string.stopwatch_start_stop_button_content_desc)
                 )
             }
         }
@@ -513,7 +456,7 @@ fun HorizontalControlButtons(
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun VerticalControlButtons(
+private fun VerticalControlButtons(
     hasStarted: Boolean,
     isRunning: Boolean,
     onToggleState: () -> Unit,
@@ -558,7 +501,7 @@ fun VerticalControlButtons(
             AnimatedContent(targetState = isRunning) {
                 Icon(
                     painter = painterResource(id = if (it) R.drawable.baseline_pause_24 else R.drawable.baseline_play_arrow_24),
-                    contentDescription = stringResource(id = R.string.start_stop_button_content_desc)
+                    contentDescription = stringResource(id = R.string.stopwatch_start_stop_button_content_desc)
                 )
             }
         }

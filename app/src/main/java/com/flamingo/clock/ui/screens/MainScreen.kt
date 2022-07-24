@@ -44,6 +44,8 @@ import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.PermanentNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallTopAppBar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -89,6 +91,7 @@ fun MainScreen(
     val scrollState = rememberTopAppBarScrollState()
     val topAppBarScrollBehavior =
         remember(scrollState) { TopAppBarDefaults.pinnedScrollBehavior(scrollState) }
+    val snackbarHostState = remember { SnackbarHostState() }
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -100,6 +103,9 @@ fun MainScreen(
                 }
             )
         },
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        }
     ) { padding ->
         when (navigationType) {
             NavigationType.BottomBar -> {
@@ -112,7 +118,8 @@ fun MainScreen(
                         .padding(padding)
                         .fillMaxSize(),
                     navController = navController,
-                    nestedScrollConnection = topAppBarScrollBehavior.nestedScrollConnection
+                    nestedScrollConnection = topAppBarScrollBehavior.nestedScrollConnection,
+                    snackbarHostState = snackbarHostState
                 )
             }
             NavigationType.SideRail -> {
@@ -125,7 +132,8 @@ fun MainScreen(
                         .padding(padding)
                         .fillMaxSize(),
                     navController = navController,
-                    nestedScrollConnection = topAppBarScrollBehavior.nestedScrollConnection
+                    nestedScrollConnection = topAppBarScrollBehavior.nestedScrollConnection,
+                    snackbarHostState = snackbarHostState
                 )
             }
             NavigationType.PermanentDrawer -> {
@@ -138,7 +146,8 @@ fun MainScreen(
                         .padding(padding)
                         .fillMaxSize(),
                     navController = navController,
-                    nestedScrollConnection = topAppBarScrollBehavior.nestedScrollConnection
+                    nestedScrollConnection = topAppBarScrollBehavior.nestedScrollConnection,
+                    snackbarHostState = snackbarHostState
                 )
             }
         }
@@ -212,6 +221,7 @@ fun MainScreenWithBottomBar(
     orientation: ContentOrientation,
     navController: NavHostController,
     nestedScrollConnection: NestedScrollConnection,
+    snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
@@ -222,7 +232,8 @@ fun MainScreenWithBottomBar(
                 .weight(1f),
             orientation = orientation,
             navController = navController,
-            nestedScrollConnection = nestedScrollConnection
+            nestedScrollConnection = nestedScrollConnection,
+            snackbarHostState = snackbarHostState
         )
         NavigationBar(modifier = Modifier.fillMaxWidth()) {
             pages.forEach {
@@ -257,6 +268,7 @@ fun MainScreenWithSideRail(
     orientation: ContentOrientation,
     navController: NavHostController,
     nestedScrollConnection: NestedScrollConnection,
+    snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -289,7 +301,8 @@ fun MainScreenWithSideRail(
                 .weight(1f),
             orientation = orientation,
             navController = navController,
-            nestedScrollConnection = nestedScrollConnection
+            nestedScrollConnection = nestedScrollConnection,
+            snackbarHostState = snackbarHostState
         )
     }
 }
@@ -303,6 +316,7 @@ fun MainScreenWithPermanentDrawer(
     orientation: ContentOrientation,
     navController: NavHostController,
     nestedScrollConnection: NestedScrollConnection,
+    snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier
 ) {
     PermanentNavigationDrawer(
@@ -335,7 +349,8 @@ fun MainScreenWithPermanentDrawer(
             modifier = Modifier.fillMaxSize(),
             orientation = orientation,
             navController = navController,
-            nestedScrollConnection = nestedScrollConnection
+            nestedScrollConnection = nestedScrollConnection,
+            snackbarHostState = snackbarHostState
         )
     }
 }
@@ -347,6 +362,7 @@ fun MainScreenContent(
     orientation: ContentOrientation,
     navController: NavHostController,
     nestedScrollConnection: NestedScrollConnection,
+    snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier
 ) {
     AnimatedContent(
@@ -361,7 +377,11 @@ fun MainScreenContent(
                 navController = navController,
                 nestedScrollConnection = nestedScrollConnection
             )
-            Page.Timer -> TimerScreen()
+            Page.Timer -> TimerScreen(
+                orientation = orientation,
+                snackbarHostState = snackbarHostState,
+                modifier = Modifier.fillMaxSize()
+            )
             Page.Stopwatch -> StopwatchScreen(
                 orientation = orientation,
                 modifier = Modifier.fillMaxSize()

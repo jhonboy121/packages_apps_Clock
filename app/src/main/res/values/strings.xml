@@ -39,10 +39,25 @@
     <string name="timer">Timer</string>
     <string name="job_with_id_exists">Job with same id already exists</string>
     <string name="timer_with_id_does_not_exist">Timer with given id does not exist</string>
+    <string name="timer_duration_must_be_greater_than_zero">Timer duration must be greater than 0</string>
+    <string name="label">Label</string>
+    <string name="plus_one_minute">+ 1:00</string>
+    <string name="backspace_button_content_desc">Backspace button for timer</string>
+    <string name="timer_start_stop_button_content_desc">Start or stop button for timer</string>
+    <string name="timer_delete_button_content_desc">Timer delete button</string>
+    <string name="add_timer_button_content_desc">Add timer button</string>
+    <string name="timer_has_already_started">Timer has already started</string>
+    <string name="running_timer_notification_channel">Running timers notification channel</string>
+    <string name="finished_timer_notification_channel">Finished timers notification channel</string>
+    <string name="resume">Resume</string>
+    <string name="add_one_minute">Add 1 min</string>
+    <string name="delete">Delete</string>
+    <string name="running">Running</string>
+    <string name="timer_service_running">Timer service is running</string>
 
     <!-- Stopwatch -->
     <string name="stopwatch">Stopwatch</string>
-    <string name="start_stop_button_content_desc">Stopwatch start or stop button</string>
+    <string name="stopwatch_start_stop_button_content_desc">Stopwatch start or stop button</string>
     <string name="stopwatch_service_notification_channel_name">Stopwatch service</string>
     <string name="pause">Pause</string>
     <string name="lap">Lap</string>
