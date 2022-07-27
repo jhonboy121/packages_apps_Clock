@@ -54,6 +54,7 @@
     <string name="delete">Delete</string>
     <string name="running">Running</string>
     <string name="timer_service_running">Timer service is running</string>
+    <string name="stop">Stop</string>
 
     <!-- Stopwatch -->
     <string name="stopwatch">Stopwatch</string>

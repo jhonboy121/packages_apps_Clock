@@ -310,12 +310,21 @@ class TimerService : LifecycleService() {
                 resetIntent
             )
         } else {
-            val pauseIntent = getBroadcastIntent(timer.id, PauseIntent)
-            builder.addAction(
-                R.drawable.baseline_pause_24,
-                getString(R.string.pause),
-                pauseIntent
-            )
+            if (timer.isNegative) {
+                val stopIntent = getBroadcastIntent(timer.id, ResetIntent)
+                builder.addAction(
+                    R.drawable.baseline_stop_24,
+                    getString(R.string.stop),
+                    stopIntent
+                )
+            } else {
+                val pauseIntent = getBroadcastIntent(timer.id, PauseIntent)
+                builder.addAction(
+                    R.drawable.baseline_pause_24,
+                    getString(R.string.pause),
+                    pauseIntent
+                )
+            }
 
             val addOneMinuteIntent = getBroadcastIntent(timer.id, AddOneMinuteIntent)
             builder.addAction(
