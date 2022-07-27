@@ -55,6 +55,12 @@
     <string name="running">Running</string>
     <string name="timer_service_running">Timer service is running</string>
     <string name="stop">Stop</string>
+    <string name="timer_running_no_label">Timer is running</string>
+    <string name="timer_running">Timer <xliff:g example="Label" id="label">%1$s</xliff:g> is running</string>
+    <string name="timer_paused_no_label">Timer is paused</string>
+    <string name="timer_paused">Timer <xliff:g example="Label" id="label">%1$s</xliff:g> is paused</string>
+    <string name="timer_is_up_no_label">Timer is up</string>
+    <string name="timer_is_up">Timer <xliff:g example="Label" id="label">%1$s</xliff:g> is up</string>
 
     <!-- Stopwatch -->
     <string name="stopwatch">Stopwatch</string>

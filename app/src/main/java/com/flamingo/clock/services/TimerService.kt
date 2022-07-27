@@ -256,22 +256,22 @@ class TimerService : LifecycleService() {
     }
 
     private fun getNotificationTitle(timer: Timer): String {
-        return buildString {
-            append(getString(R.string.timer))
-            append(' ')
-            if (timer.label != null) {
-                append(timer.label)
-                append(' ')
-            }
-            append(
-                getString(
-                    if (timer.isPaused)
-                        R.string.paused
-                    else
-                        R.string.running
-                )
+        return timer.label?.takeIf { it.isNotBlank() }?.let {
+            getString(
+                when {
+                    timer.isNegative -> R.string.timer_is_up
+                    timer.isPaused -> R.string.timer_paused
+                    else -> R.string.timer_running
+                },
+                it
             )
-        }
+        } ?: getString(
+            when {
+                timer.isNegative -> R.string.timer_is_up_no_label
+                timer.isPaused -> R.string.timer_paused_no_label
+                else -> R.string.timer_running_no_label
+            }
+        )
     }
 
     private fun getNotificationText(timer: Timer): String {
