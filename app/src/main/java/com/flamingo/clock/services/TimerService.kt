@@ -426,7 +426,8 @@ class TimerService : LifecycleService() {
             val timer = timersList.find { it.id == id } ?: return@withLock Result.failure(
                 Throwable(getString(R.string.timer_with_id_does_not_exist))
             )
-            val newTotalDuration = timer.totalDuration + duration
+            val newTotalDuration =
+                duration + if (timer.isNegative) Duration.ZERO else timer.totalDuration
             timer.apply {
                 totalDuration = newTotalDuration
                 remainingDuration = newTotalDuration
