@@ -49,7 +49,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
-import androidx.compose.material3.rememberTopAppBarScrollState
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -88,7 +88,7 @@ fun MainScreen(
     val pageSwitchCallback by rememberUpdatedState(newValue = { page: Page ->
         selectedPage = page
     })
-    val scrollState = rememberTopAppBarScrollState()
+    val scrollState = rememberTopAppBarState()
     val topAppBarScrollBehavior =
         remember(scrollState) { TopAppBarDefaults.pinnedScrollBehavior(scrollState) }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -154,7 +154,7 @@ fun MainScreen(
     }
 }
 
-@OptIn(ExperimentalAnimationApi::class)
+@OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun TopBar(
     labelId: Int,
