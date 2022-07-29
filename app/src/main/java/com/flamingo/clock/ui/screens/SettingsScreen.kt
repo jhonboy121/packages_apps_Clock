@@ -28,6 +28,7 @@ import com.flamingo.clock.data.ClockStyle
 import com.flamingo.clock.data.DEFAULT_CLOCK_STYLE
 import com.flamingo.clock.data.DEFAULT_SHOW_SECONDS
 import com.flamingo.clock.data.DEFAULT_TIME_FORMAT
+import com.flamingo.clock.data.DEFAULT_VIBRATE_FOR_TIMERS
 import com.flamingo.clock.data.TimeFormat
 import com.flamingo.clock.ui.states.SettingsScreenState
 import com.flamingo.clock.ui.states.rememberSettingsScreenState
@@ -110,6 +111,20 @@ fun SettingsScreen(
                 onClick = {
                     state.openDateAndTimeSettings()
                 },
+            )
+        }
+        item(key = R.string.timer) {
+            PreferenceGroupHeader(title = stringResource(id = R.string.timer))
+        }
+        item(key = R.string.vibrate_for_timers) {
+            val vibrateForTimers by state.vibrateForTimers.collectAsState(initial = DEFAULT_VIBRATE_FOR_TIMERS)
+            SwitchPreference(
+                title = stringResource(id = R.string.vibrate_for_timers),
+                summary = stringResource(id = R.string.vibrate_for_timers_summary),
+                checked = vibrateForTimers,
+                onCheckedChange = {
+                    state.setVibrateForTimers(it)
+                }
             )
         }
     }

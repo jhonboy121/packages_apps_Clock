@@ -67,6 +67,9 @@ class SettingsScreenState(
     val homeTimeZone: Flow<String?>
         get() = settingsRepository.homeTimeZone.map { it.ifBlank { null } }
 
+    val vibrateForTimers: Flow<Boolean>
+        get() = settingsRepository.vibrateForTimers
+
     init {
         coroutineScope.launch(Dispatchers.Default) {
             loadAllTimeZones()
@@ -127,6 +130,12 @@ class SettingsScreenState(
 
     fun openDateAndTimeSettings() {
         context.startActivity(settingsIntent)
+    }
+
+    fun setVibrateForTimers(vibrate: Boolean) {
+        coroutineScope.launch {
+            settingsRepository.setVibrateForTimers(vibrate)
+        }
     }
 
     companion object {

@@ -32,12 +32,15 @@ val DEFAULT_CLOCK_STYLE = ClockStyle.DIGITAL
 const val DEFAULT_SHOW_SECONDS = false
 val DEFAULT_TIME_FORMAT = TimeFormat.TWELVE_HOUR
 
+const val DEFAULT_VIBRATE_FOR_TIMERS = false
+
 object SettingsSerializer : Serializer<Settings> {
 
     override val defaultValue: Settings = Settings.newBuilder()
         .setClockStyle(DEFAULT_CLOCK_STYLE)
         .setShowSeconds(DEFAULT_SHOW_SECONDS)
         .setTimeFormat(DEFAULT_TIME_FORMAT)
+        .setVibrateForTimers(DEFAULT_VIBRATE_FOR_TIMERS)
         .build()
 
     override suspend fun readFrom(input: InputStream): Settings {

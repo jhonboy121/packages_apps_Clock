@@ -41,6 +41,9 @@ class SettingsRepository(context: Context) {
     val homeTimeZone: Flow<String>
         get() = settings.data.map { it.homeTimeZone }
 
+    val vibrateForTimers: Flow<Boolean>
+        get() = settings.data.map { it.vibrateForTimers }
+
     suspend fun setClockStyle(clockStyle: ClockStyle) {
         settings.updateData {
             it.toBuilder()
@@ -77,6 +80,14 @@ class SettingsRepository(context: Context) {
         settings.updateData {
             it.toBuilder()
                 .clearHomeTimeZone()
+                .build()
+        }
+    }
+
+    suspend fun setVibrateForTimers(vibrate: Boolean) {
+        settings.updateData {
+            it.toBuilder()
+                .setVibrateForTimers(vibrate)
                 .build()
         }
     }

@@ -90,5 +90,7 @@
     <string name="twenty_four_hour">24 hour</string>
     <string name="change_date_and_time">Change date and time</string>
     <string name="home_time_zone">Home time zone</string>
+    <string name="vibrate_for_timers">Vibrate for timers</string>
+    <string name="vibrate_for_timers_summary">Whether to vibrate repeatedly when a timer is up</string>
 
 </resources>

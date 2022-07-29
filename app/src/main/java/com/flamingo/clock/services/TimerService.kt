@@ -29,6 +29,8 @@ import android.content.res.Configuration
 import android.os.Binder
 import android.os.IBinder
 import android.os.SystemClock
+import android.os.VibrationEffect
+import android.os.Vibrator
 
 import androidx.annotation.GuardedBy
 import androidx.core.app.NotificationCompat
@@ -38,6 +40,7 @@ import androidx.lifecycle.lifecycleScope
 
 import com.flamingo.clock.R
 import com.flamingo.clock.data.getPrependedString
+import com.flamingo.clock.repositories.SettingsRepository
 import com.flamingo.clock.ui.ClockActivity
 
 import java.util.concurrent.atomic.AtomicInteger
@@ -53,10 +56,15 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+
+import org.koin.android.ext.android.inject
 
 class TimerService : LifecycleService() {
 
@@ -64,6 +72,7 @@ class TimerService : LifecycleService() {
     private lateinit var currentConfig: Configuration
     private lateinit var notificationManager: NotificationManager
     private lateinit var activityIntent: PendingIntent
+    private lateinit var vibrator: Vibrator
 
     private val counter = AtomicInteger(1)
 
@@ -76,7 +85,6 @@ class TimerService : LifecycleService() {
     val timers: StateFlow<List<Timer>> = _timers.asStateFlow()
 
     private var timerJob: Job? = null
-    private var notificationJob: Job? = null
 
     private var receiverRegistered = false
     private val broadcastReceiver = object : BroadcastReceiver() {
@@ -116,21 +124,26 @@ class TimerService : LifecycleService() {
         }
     }
 
+    private val settingsRepository by inject<SettingsRepository>()
+
     override fun onCreate() {
         super.onCreate()
         serviceBinder = ServiceBinder()
         notificationManager = getSystemService()!!
+        vibrator = getSystemService()!!
         activityIntent = PendingIntent.getActivity(
             this,
             ACTIVITY_REQUEST_CODE,
             Intent(this, ClockActivity::class.java),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
-        createNotificationChannel()
+        createNotificationChannels()
         currentConfig = resources.configuration
+        registerReceiver()
+        observeNotifications()
     }
 
-    private fun createNotificationChannel() {
+    private fun createNotificationChannels() {
         val runningNotificationChannel = NotificationChannel(
             RUNNING_TIMER_NOTIFICATION_CHANNEL_ID,
             getString(R.string.running_timer_notification_channel),
@@ -141,8 +154,12 @@ class TimerService : LifecycleService() {
             getString(R.string.finished_timer_notification_channel),
             NotificationManager.IMPORTANCE_HIGH
         )
-        notificationManager.createNotificationChannel(runningNotificationChannel)
-        notificationManager.createNotificationChannel(finishedNotificationChannel)
+        notificationManager.createNotificationChannels(
+            listOf(
+                runningNotificationChannel,
+                finishedNotificationChannel
+            )
+        )
     }
 
     override fun onBind(intent: Intent): IBinder {
@@ -153,9 +170,54 @@ class TimerService : LifecycleService() {
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         if (newConfig.diff(currentConfig) == ActivityInfo.CONFIG_LOCALE) {
-            createNotificationChannel()
+            createNotificationChannels()
         }
         currentConfig = newConfig
+    }
+
+    private fun registerReceiver() {
+        if (!receiverRegistered) {
+            registerReceiver(
+                broadcastReceiver,
+                IntentFilter().apply {
+                    addAction(ACTION_PAUSE)
+                    addAction(ACTION_ADD_ONE_MINUTE)
+                    addAction(ACTION_RESUME)
+                    addAction(ACTION_RESET)
+                    addAction(ACTION_DELETE)
+                },
+            )
+            receiverRegistered = true
+        }
+    }
+
+    private fun observeNotifications() {
+        lifecycleScope.launch {
+            launch {
+                timers.map { list -> list.any { it.isNegative } }
+                    .distinctUntilChanged()
+                    .combine(settingsRepository.vibrateForTimers) { timersUp, vibrateEnabled ->
+                        vibrateEnabled && timersUp
+                    }.collect {
+                        if (it) {
+                            vibrator.vibrate(TimerVibrationEffect)
+                        } else {
+                            vibrator.cancel()
+                        }
+                    }
+            }
+            timers
+                .map { list -> list.filter { it.hasStarted } }
+                .collect { list ->
+                    list.forEach {
+                        notificationManager.notify(
+                            BASE_NOTIFICATION_ID + it.id,
+                            createNotification(it)
+                        )
+                    }
+                    delay(1000)
+                }
+        }
     }
 
     suspend fun addTimer(duration: Duration): Result<Unit> {
@@ -174,42 +236,12 @@ class TimerService : LifecycleService() {
             timersList.add(0, timer)
             updateTimerListLocked()
             maybeStartTimerJob()
-            startObservingNotifications()
             Result.success(Unit)
         }
     }
 
     private fun updateTimerListLocked() {
         _timers.value = timersList.toList()
-    }
-
-    private fun startObservingNotifications() {
-        if (notificationJob?.isActive != true) {
-            notificationJob = lifecycleScope.launch {
-                do {
-                    timers.value.filter { it.hasStarted }.forEach {
-                        notificationManager.notify(
-                            BASE_NOTIFICATION_ID + it.id,
-                            createNotification(it)
-                        )
-                    }
-                    delay(1000)
-                } while (isActive)
-            }
-        }
-        if (!receiverRegistered) {
-            registerReceiver(
-                broadcastReceiver,
-                IntentFilter().apply {
-                    addAction(ACTION_PAUSE)
-                    addAction(ACTION_ADD_ONE_MINUTE)
-                    addAction(ACTION_RESUME)
-                    addAction(ACTION_RESET)
-                    addAction(ACTION_DELETE)
-                },
-            )
-            receiverRegistered = true
-        }
     }
 
     private fun maybeStartTimerJob() {
@@ -221,6 +253,7 @@ class TimerService : LifecycleService() {
                     .setContentTitle(getString(R.string.timer_service_running))
                     .setOngoing(true)
                     .setSilent(true)
+                    .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
                     .build()
             )
             timerJob = lifecycleScope.launch(Dispatchers.Default) {
@@ -248,9 +281,8 @@ class TimerService : LifecycleService() {
                 else
                     NotificationCompat.PRIORITY_DEFAULT
             )
-            .setOnlyAlertOnce(true)
             .setOngoing(true)
-            .setSilent(!timer.isNegative)
+            .setSilent(true)
         addActions(timer, builder)
         return builder.build()
     }
@@ -361,11 +393,10 @@ class TimerService : LifecycleService() {
             val duration = (next - now).nanoseconds
             now = next
             timerMutex.withLock {
-                timersList.forEach { timer ->
+                timersList.forEachIndexed { index, timer ->
                     if (timer.hasStarted && !timer.isPaused) {
-                        timer.apply {
-                            remainingDuration = timer.remainingDuration - duration
-                        }
+                        timersList[index] =
+                            timer.copy(remainingDuration = timer.remainingDuration - duration)
                     }
                 }
                 updateTimerListLocked()
@@ -375,10 +406,10 @@ class TimerService : LifecycleService() {
 
     suspend fun setTimerLabel(id: Int, label: String): Result<Unit> {
         return timerMutex.withLock {
-            val timer = timersList.find { it.id == id } ?: return@withLock Result.failure(
-                Throwable(getString(R.string.timer_with_id_does_not_exist))
-            )
-            timer.label = label
+            val timerIndex = timersList.indexOfFirst { it.id == id }.takeIf { it >= 0 }
+                ?: return@withLock Result.failure(Throwable(getString(R.string.timer_with_id_does_not_exist)))
+            timersList[timerIndex] =
+                timersList[timerIndex].copy(label = label)
             updateTimerListLocked()
             Result.success(Unit)
         }
@@ -386,23 +417,21 @@ class TimerService : LifecycleService() {
 
     suspend fun startTimer(id: Int): Result<Unit> {
         return timerMutex.withLock {
-            val timer = timersList.find { it.id == id } ?: return@withLock Result.failure(
-                Throwable(getString(R.string.timer_with_id_does_not_exist))
-            )
-            timer.hasStarted = true
+            val timerIndex = timersList.indexOfFirst { it.id == id }.takeIf { it >= 0 }
+                ?: return@withLock Result.failure(Throwable(getString(R.string.timer_with_id_does_not_exist)))
+            timersList[timerIndex] =
+                timersList[timerIndex].copy(hasStarted = true, isPaused = false)
             updateTimerListLocked()
             maybeStartTimerJob()
-            startObservingNotifications()
             Result.success(Unit)
         }
     }
 
     suspend fun pauseTimer(id: Int): Result<Unit> {
         return timerMutex.withLock {
-            val timer = timersList.find { it.id == id } ?: return@withLock Result.failure(
-                Throwable(getString(R.string.timer_with_id_does_not_exist))
-            )
-            timer.isPaused = true
+            val timerIndex = timersList.indexOfFirst { it.id == id }.takeIf { it >= 0 }
+                ?: return@withLock Result.failure(Throwable(getString(R.string.timer_with_id_does_not_exist)))
+            timersList[timerIndex] = timersList[timerIndex].copy(isPaused = true)
             updateTimerListLocked()
             maybeCancelJobIfAllInactiveLocked()
             Result.success(Unit)
@@ -411,10 +440,9 @@ class TimerService : LifecycleService() {
 
     suspend fun resumeTimer(id: Int): Result<Unit> {
         return timerMutex.withLock {
-            val timer = timersList.find { it.id == id } ?: return@withLock Result.failure(
-                Throwable(getString(R.string.timer_with_id_does_not_exist))
-            )
-            timer.isPaused = false
+            val timerIndex = timersList.indexOfFirst { it.id == id }.takeIf { it >= 0 }
+                ?: return@withLock Result.failure(Throwable(getString(R.string.timer_with_id_does_not_exist)))
+            timersList[timerIndex] = timersList[timerIndex].copy(isPaused = false)
             updateTimerListLocked()
             maybeStartTimerJob()
             Result.success(Unit)
@@ -423,15 +451,15 @@ class TimerService : LifecycleService() {
 
     suspend fun incrementTimer(id: Int, duration: Duration): Result<Unit> {
         return timerMutex.withLock {
-            val timer = timersList.find { it.id == id } ?: return@withLock Result.failure(
-                Throwable(getString(R.string.timer_with_id_does_not_exist))
-            )
+            val timerIndex = timersList.indexOfFirst { it.id == id }.takeIf { it >= 0 }
+                ?: return@withLock Result.failure(
+                    Throwable(getString(R.string.timer_with_id_does_not_exist))
+                )
+            val timer = timersList[timerIndex]
             val newTotalDuration =
                 duration + if (timer.isNegative) Duration.ZERO else timer.totalDuration
-            timer.apply {
-                totalDuration = newTotalDuration
-                remainingDuration = newTotalDuration
-            }
+            timersList[timerIndex] =
+                timer.copy(totalDuration = newTotalDuration, remainingDuration = newTotalDuration)
             updateTimerListLocked()
             Result.success(Unit)
         }
@@ -439,17 +467,16 @@ class TimerService : LifecycleService() {
 
     suspend fun resetTimer(id: Int): Result<Unit> {
         return timerMutex.withLock {
-            val timer = timersList.find { it.id == id } ?: return@withLock Result.failure(
-                Throwable(getString(R.string.timer_with_id_does_not_exist))
-            )
-            timer.apply {
-                remainingDuration = timer.totalDuration
-                hasStarted = false
+            val timerIndex = timersList.indexOfFirst { it.id == id }.takeIf { it >= 0 }
+                ?: return@withLock Result.failure(Throwable(getString(R.string.timer_with_id_does_not_exist)))
+            val timer = timersList[timerIndex]
+            timersList[timerIndex] = timer.copy(
+                remainingDuration = timer.totalDuration,
+                hasStarted = false,
                 isPaused = false
-            }
+            )
             updateTimerListLocked()
             maybeCancelJobIfAllInactiveLocked()
-            maybeStopObservingNotificationsLocked()
             notificationManager.cancel(BASE_NOTIFICATION_ID + id)
             Result.success(Unit)
         }
@@ -460,7 +487,6 @@ class TimerService : LifecycleService() {
             if (timersList.removeAll { it.id == id }) {
                 updateTimerListLocked()
                 maybeCancelJobIfAllInactiveLocked()
-                maybeStopObservingNotificationsLocked()
                 notificationManager.cancel(BASE_NOTIFICATION_ID + id)
                 Result.success(Unit)
             } else {
@@ -476,15 +502,6 @@ class TimerService : LifecycleService() {
         ) {
             cancelJob()
             stopForeground(STOP_FOREGROUND_REMOVE)
-        }
-    }
-
-    private fun maybeStopObservingNotificationsLocked() {
-        if (notificationJob?.isActive != true) return
-        if (!timersList.any { it.hasStarted }) {
-            notificationJob?.cancel()
-            notificationJob = null
-            unregisterReceiver()
             counter.set(1)
         }
     }
@@ -542,16 +559,22 @@ class TimerService : LifecycleService() {
         private val DeleteIntent = Intent(ACTION_DELETE)
 
         private const val EXTRA_TIMER_ID = "com.flamingo.clock.timer.action.TIMER_ID"
+
+        private val TimerVibrationEffect = VibrationEffect.createWaveform(
+            longArrayOf(0, 300, 400, 300, 400, 300, 1400),
+            intArrayOf(0, 255, 0, 255, 0, 255, 0),
+            1
+        )
     }
 }
 
 data class Timer(
     val id: Int,
-    var totalDuration: Duration,
-    var remainingDuration: Duration = totalDuration,
-    var label: String? = null,
-    var hasStarted: Boolean = false,
-    var isPaused: Boolean = false
+    val totalDuration: Duration,
+    val remainingDuration: Duration = totalDuration,
+    val label: String? = null,
+    val hasStarted: Boolean = false,
+    val isPaused: Boolean = false
 ) {
     val isNegative: Boolean
         get() = remainingDuration.isNegative()

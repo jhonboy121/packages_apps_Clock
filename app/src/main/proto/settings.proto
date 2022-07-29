@@ -24,6 +24,8 @@ message Settings {
   bool show_seconds = 2;
   TimeFormat time_format = 3;
   string home_time_zone = 4;
+
+  bool vibrate_for_timers = 5;
 }
 
 enum ClockStyle {
