@@ -18,7 +18,7 @@ package com.flamingo.clock
 
 import android.app.Application
 
-import com.flamingo.clock.di.clockModule
+import com.flamingo.clock.koin.clockModule
 
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin

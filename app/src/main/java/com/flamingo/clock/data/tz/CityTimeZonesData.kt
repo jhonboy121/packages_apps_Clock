@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.flamingo.clock.data
+package com.flamingo.clock.data.tz
 
 import android.content.Context
 import android.util.Log

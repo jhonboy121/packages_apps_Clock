@@ -40,7 +40,7 @@ import androidx.lifecycle.lifecycleScope
 
 import com.flamingo.clock.R
 import com.flamingo.clock.data.getPrependedString
-import com.flamingo.clock.repositories.SettingsRepository
+import com.flamingo.clock.data.settings.SettingsRepository
 import com.flamingo.clock.ui.ClockActivity
 
 import java.util.concurrent.atomic.AtomicInteger

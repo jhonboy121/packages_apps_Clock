@@ -24,10 +24,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 
-import com.flamingo.clock.data.ClockStyle
-import com.flamingo.clock.data.TimeFormat
-import com.flamingo.clock.repositories.CityTimeZoneRepository
-import com.flamingo.clock.repositories.SettingsRepository
+import com.flamingo.clock.data.settings.ClockStyle
+import com.flamingo.clock.data.settings.SettingsRepository
+import com.flamingo.clock.data.settings.TimeFormat
+import com.flamingo.clock.data.tz.CityTimeZoneRepository
 import com.flamingo.support.compose.ui.preferences.Entry
 
 import java.time.Instant

@@ -16,9 +16,9 @@
 
 package com.flamingo.clock.ui.states
 
-import com.flamingo.clock.data.CityTimeZone
 import com.flamingo.clock.data.Resolution
 import com.flamingo.clock.data.Time
+import com.flamingo.clock.data.tz.CityTimeZone
 
 import java.time.ZoneId
 

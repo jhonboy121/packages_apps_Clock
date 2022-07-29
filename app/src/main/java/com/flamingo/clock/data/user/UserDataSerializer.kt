@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.flamingo.clock.data
+package com.flamingo.clock.data.user
 
 import android.content.Context
 
@@ -36,7 +36,7 @@ object UserDataSerializer : Serializer<UserData> {
         try {
             return UserData.parseFrom(input)
         } catch (exception: InvalidProtocolBufferException) {
-            throw CorruptionException("Cannot parse gamespace proto", exception)
+            throw CorruptionException("Cannot parse user data proto", exception)
         }
     }
 

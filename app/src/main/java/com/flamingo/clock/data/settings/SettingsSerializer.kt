@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.flamingo.clock.data
+package com.flamingo.clock.data.settings
 
 import android.content.Context
 
@@ -47,7 +47,7 @@ object SettingsSerializer : Serializer<Settings> {
         try {
             return Settings.parseFrom(input)
         } catch (exception: InvalidProtocolBufferException) {
-            throw CorruptionException("Cannot parse gamespace proto", exception)
+            throw CorruptionException("Cannot parse settings proto", exception)
         }
     }
 

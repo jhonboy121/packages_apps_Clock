@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.flamingo.clock.di
+package com.flamingo.clock.koin
 
-import com.flamingo.clock.data.CityTimeZonesData
-import com.flamingo.clock.repositories.CityTimeZoneRepository
-import com.flamingo.clock.repositories.SettingsRepository
-import com.flamingo.clock.repositories.UserDataRepository
+import com.flamingo.clock.data.tz.CityTimeZonesData
+import com.flamingo.clock.data.tz.CityTimeZoneRepository
+import com.flamingo.clock.data.settings.SettingsRepository
+import com.flamingo.clock.data.user.UserDataRepository
 
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module

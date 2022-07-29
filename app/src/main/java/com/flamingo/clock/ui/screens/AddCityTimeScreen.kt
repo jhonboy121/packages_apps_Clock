@@ -69,9 +69,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 
 import com.flamingo.clock.R
-import com.flamingo.clock.data.DEFAULT_TIME_FORMAT
-import com.flamingo.clock.data.TimeFormat
 import com.flamingo.clock.data.getPrependedString
+import com.flamingo.clock.data.settings.DEFAULT_TIME_FORMAT
+import com.flamingo.clock.data.settings.TimeFormat
 import com.flamingo.clock.ui.states.AddCityTimeScreenState
 import com.flamingo.clock.ui.states.CityTime
 import com.flamingo.clock.ui.states.rememberAddCityTimeScreenState

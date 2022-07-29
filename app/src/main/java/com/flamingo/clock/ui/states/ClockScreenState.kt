@@ -24,14 +24,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 
 import com.flamingo.clock.R
-import com.flamingo.clock.data.ClockStyle
 import com.flamingo.clock.data.Date
 import com.flamingo.clock.data.Resolution
 import com.flamingo.clock.data.Time
-import com.flamingo.clock.data.TimeFormat
 import com.flamingo.clock.data.TimeZoneDifference
-import com.flamingo.clock.repositories.SettingsRepository
-import com.flamingo.clock.repositories.UserDataRepository
+import com.flamingo.clock.data.settings.ClockStyle
+import com.flamingo.clock.data.settings.SettingsRepository
+import com.flamingo.clock.data.settings.TimeFormat
+import com.flamingo.clock.data.user.UserDataRepository
 
 import java.time.ZoneId
 

@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package com.flamingo.clock.repositories
+package com.flamingo.clock.data.user
 
 import android.content.Context
 
-import com.flamingo.clock.data.CityTimeZone
-import com.flamingo.clock.data.userData
+import com.flamingo.clock.data.tz.CityTimeZone
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map

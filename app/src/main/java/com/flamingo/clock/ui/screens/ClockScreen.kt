@@ -79,14 +79,13 @@ import androidx.compose.ui.unit.times
 import androidx.navigation.NavController
 
 import com.flamingo.clock.R
-import com.flamingo.clock.data.CityTimeZone
-import com.flamingo.clock.data.ClockStyle
-import com.flamingo.clock.data.DEFAULT_CLOCK_STYLE
-import com.flamingo.clock.data.DEFAULT_SHOW_SECONDS
-import com.flamingo.clock.data.DEFAULT_TIME_FORMAT
 import com.flamingo.clock.data.Date
 import com.flamingo.clock.data.Time
-import com.flamingo.clock.data.TimeFormat
+import com.flamingo.clock.data.settings.ClockStyle
+import com.flamingo.clock.data.settings.DEFAULT_CLOCK_STYLE
+import com.flamingo.clock.data.settings.DEFAULT_SHOW_SECONDS
+import com.flamingo.clock.data.settings.DEFAULT_TIME_FORMAT
+import com.flamingo.clock.data.settings.TimeFormat
 import com.flamingo.clock.data.TimeZoneDifference
 import com.flamingo.clock.data.getPrependedString
 import com.flamingo.clock.ui.AddCityTime
@@ -98,7 +97,6 @@ import com.flamingo.clock.ui.theme.ButtonSizeVertical
 import com.flamingo.clock.ui.theme.ButtonSizeHorizontal
 
 import kotlin.math.roundToInt
-import kotlinx.coroutines.flow.map
 
 @Composable
 fun ClockScreen(

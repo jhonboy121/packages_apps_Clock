@@ -16,11 +16,11 @@
 
 syntax = "proto3";
 
-import "tz.proto";
-
-option java_package = "com.flamingo.clock.data.user";
+option java_package = "com.flamingo.clock.data.tz";
 option java_multiple_files = true;
 
-message UserData {
-  repeated CityTimeZone city_time_zones = 1;
+message CityTimeZone {
+  string city = 1;
+  string country = 2;
+  string timezone = 3;
 }

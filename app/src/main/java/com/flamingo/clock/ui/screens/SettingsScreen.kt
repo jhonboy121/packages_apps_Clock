@@ -24,12 +24,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
 
 import com.flamingo.clock.R
-import com.flamingo.clock.data.ClockStyle
-import com.flamingo.clock.data.DEFAULT_CLOCK_STYLE
-import com.flamingo.clock.data.DEFAULT_SHOW_SECONDS
-import com.flamingo.clock.data.DEFAULT_TIME_FORMAT
-import com.flamingo.clock.data.DEFAULT_VIBRATE_FOR_TIMERS
-import com.flamingo.clock.data.TimeFormat
+import com.flamingo.clock.data.settings.ClockStyle
+import com.flamingo.clock.data.settings.DEFAULT_CLOCK_STYLE
+import com.flamingo.clock.data.settings.DEFAULT_SHOW_SECONDS
+import com.flamingo.clock.data.settings.DEFAULT_TIME_FORMAT
+import com.flamingo.clock.data.settings.DEFAULT_VIBRATE_FOR_TIMERS
+import com.flamingo.clock.data.settings.TimeFormat
 import com.flamingo.clock.ui.states.SettingsScreenState
 import com.flamingo.clock.ui.states.rememberSettingsScreenState
 import com.flamingo.support.compose.ui.layout.CollapsingToolbarLayout
@@ -46,6 +46,7 @@ fun SettingsScreen(
     state: SettingsScreenState = rememberSettingsScreenState()
 ) {
     CollapsingToolbarLayout(
+        modifier = modifier,
         title = stringResource(id = R.string.settings),
         onBackButtonPressed = { navController.popBackStack() }
     ) {

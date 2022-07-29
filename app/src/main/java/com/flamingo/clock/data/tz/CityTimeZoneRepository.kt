@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-package com.flamingo.clock.repositories
-
-import com.flamingo.clock.data.CityTimeZone
-import com.flamingo.clock.data.CityTimeZonesData
+package com.flamingo.clock.data.tz
 
 class CityTimeZoneRepository(private val cityTimeZonesData: CityTimeZonesData) {
 

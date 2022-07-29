@@ -14,13 +14,9 @@
  * limitations under the License.
  */
 
-package com.flamingo.clock.repositories
+package com.flamingo.clock.data.settings
 
 import android.content.Context
-
-import com.flamingo.clock.data.ClockStyle
-import com.flamingo.clock.data.TimeFormat
-import com.flamingo.clock.data.settings
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map

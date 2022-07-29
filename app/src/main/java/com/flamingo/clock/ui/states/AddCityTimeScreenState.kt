@@ -27,11 +27,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 
-import com.flamingo.clock.data.CityTimeZone
-import com.flamingo.clock.data.TimeFormat
-import com.flamingo.clock.repositories.CityTimeZoneRepository
-import com.flamingo.clock.repositories.SettingsRepository
-import com.flamingo.clock.repositories.UserDataRepository
+import com.flamingo.clock.data.tz.CityTimeZone
+import com.flamingo.clock.data.tz.CityTimeZoneRepository
+import com.flamingo.clock.data.settings.SettingsRepository
+import com.flamingo.clock.data.settings.TimeFormat
+import com.flamingo.clock.data.user.UserDataRepository
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
