@@ -93,4 +93,12 @@
     <string name="vibrate_for_timers">Vibrate for timers</string>
     <string name="vibrate_for_timers_summary">Whether to vibrate repeatedly when a timer is up</string>
 
+    <!-- Timer sound -->
+    <string name="timer_sound">Timer sound</string>
+    <string name="your_sounds">Your sounds</string>
+    <string name="add_new">Add new</string>
+    <string name="device_sounds">Device sounds</string>
+    <string name="silent">Silent</string>
+    <string name="loading_progress_indicator_key" translatable="false">Loading progress indicator</string>
+
 </resources>

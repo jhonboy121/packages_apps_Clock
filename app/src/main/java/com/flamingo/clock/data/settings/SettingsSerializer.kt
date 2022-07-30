@@ -17,6 +17,7 @@
 package com.flamingo.clock.data.settings
 
 import android.content.Context
+import android.net.Uri
 
 import androidx.datastore.core.CorruptionException
 import androidx.datastore.core.DataStore
@@ -33,6 +34,7 @@ const val DEFAULT_SHOW_SECONDS = false
 val DEFAULT_TIME_FORMAT = TimeFormat.TWELVE_HOUR
 
 const val DEFAULT_VIBRATE_FOR_TIMERS = false
+val DEFAULT_TIMER_SOUND_URI: Uri = Uri.EMPTY
 
 object SettingsSerializer : Serializer<Settings> {
 
@@ -41,6 +43,7 @@ object SettingsSerializer : Serializer<Settings> {
         .setShowSeconds(DEFAULT_SHOW_SECONDS)
         .setTimeFormat(DEFAULT_TIME_FORMAT)
         .setVibrateForTimers(DEFAULT_VIBRATE_FOR_TIMERS)
+        .setTimerSoundUri(DEFAULT_TIMER_SOUND_URI.toString())
         .build()
 
     override suspend fun readFrom(input: InputStream): Settings {

@@ -30,6 +30,7 @@ import com.flamingo.clock.data.settings.DEFAULT_SHOW_SECONDS
 import com.flamingo.clock.data.settings.DEFAULT_TIME_FORMAT
 import com.flamingo.clock.data.settings.DEFAULT_VIBRATE_FOR_TIMERS
 import com.flamingo.clock.data.settings.TimeFormat
+import com.flamingo.clock.ui.TimerSound
 import com.flamingo.clock.ui.states.SettingsScreenState
 import com.flamingo.clock.ui.states.rememberSettingsScreenState
 import com.flamingo.support.compose.ui.layout.CollapsingToolbarLayout
@@ -116,6 +117,14 @@ fun SettingsScreen(
         }
         item(key = R.string.timer) {
             PreferenceGroupHeader(title = stringResource(id = R.string.timer))
+        }
+        item(key = R.string.timer_sound) {
+            Preference(
+                title = stringResource(id = R.string.timer_sound),
+                onClick = {
+                    navController.navigate(TimerSound.path)
+                }
+            )
         }
         item(key = R.string.vibrate_for_timers) {
             val vibrateForTimers by state.vibrateForTimers.collectAsState(initial = DEFAULT_VIBRATE_FOR_TIMERS)

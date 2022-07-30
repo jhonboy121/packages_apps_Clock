@@ -49,6 +49,7 @@ import androidx.navigation.NavHostController
 import com.flamingo.clock.ui.screens.AddCityTimeScreen
 import com.flamingo.clock.ui.screens.MainScreen
 import com.flamingo.clock.ui.screens.SettingsScreen
+import com.flamingo.clock.ui.screens.TimerSoundScreen
 import com.flamingo.clock.ui.theme.ClockTheme
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
@@ -69,6 +70,7 @@ class ClockActivity : ComponentActivity() {
                     val navController = rememberAnimatedNavController()
                     AnimatedNavHost(navController = navController, startDestination = Main.path) {
                         mainGraph(windowSizeClass = windowSizeClass, navController = navController)
+                        settingsGraph(navController = navController)
                     }
                 }
             }
@@ -80,28 +82,10 @@ class ClockActivity : ComponentActivity() {
         windowSizeClass: WindowSizeClass,
         navController: NavHostController
     ) {
-        composable(
-            Main.path,
-            exitTransition = {
-                when (targetState.destination.route) {
-                    AddCityTime.path,
-                    Settings.path -> slideOutOfContainer(
-                        AnimatedContentScope.SlideDirection.Start,
-                        tween(TransitionAnimationDuration)
-                    )
-                    else -> null
-                }
-            },
-            popEnterTransition = {
-                when (initialState.destination.route) {
-                    AddCityTime.path,
-                    Settings.path -> slideIntoContainer(
-                        AnimatedContentScope.SlideDirection.End,
-                        tween(TransitionAnimationDuration)
-                    )
-                    else -> null
-                }
-            },
+        slidingComposable(
+            route = Main.path,
+            startingRoutes = emptyList(),
+            destinationRoutes = listOf(Settings.path, AddCityTime.path)
         ) {
             val navigationType =
                 if (windowSizeClass.heightSizeClass == WindowHeightSizeClass.Compact) {
@@ -116,7 +100,8 @@ class ClockActivity : ComponentActivity() {
                 }
             val contentOrientation =
                 if (windowSizeClass.heightSizeClass == WindowHeightSizeClass.Compact ||
-                        windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded) {
+                    windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded
+                ) {
                     ContentOrientation.Horizontal
                 } else {
                     ContentOrientation.Vertical
@@ -130,9 +115,10 @@ class ClockActivity : ComponentActivity() {
                 navController = navController
             )
         }
-        animatedComposable(
+        slidingComposable(
             route = AddCityTime.path,
-            home = Main.path
+            startingRoutes = listOf(Main.path),
+            destinationRoutes = emptyList()
         ) {
             val sideNavigationBarPadding =
                 with(LocalDensity.current) {
@@ -156,38 +142,72 @@ class ClockActivity : ComponentActivity() {
                 isEnterAnimationRunning = transition.currentState == EnterExitState.PreEnter
             )
         }
-        animatedComposable(
+    }
+
+    private fun NavGraphBuilder.settingsGraph(navController: NavHostController) {
+        slidingComposable(
             route = Settings.path,
-            home = Main.path
+            startingRoutes = listOf(Main.path),
+            destinationRoutes = listOf(TimerSound.path)
         ) {
             SettingsScreen(navController = navController, modifier = Modifier.fillMaxSize())
+        }
+        slidingComposable(
+            route = TimerSound.path,
+            startingRoutes = listOf(Settings.path),
+            destinationRoutes = emptyList()
+        ) {
+            TimerSoundScreen(navController = navController, modifier = Modifier.fillMaxSize())
         }
     }
 
     @OptIn(ExperimentalAnimationApi::class)
-    fun NavGraphBuilder.animatedComposable(
+    fun NavGraphBuilder.slidingComposable(
         route: String,
-        home: String,
+        startingRoutes: List<String>,
+        destinationRoutes: List<String>,
         content: @Composable AnimatedVisibilityScope.(NavBackStackEntry) -> Unit
     ) {
         composable(
-            route,
+            route = route,
             enterTransition = {
-                when (initialState.destination.route) {
-                    home -> slideIntoContainer(
+                if (startingRoutes.contains(initialState.destination.route)) {
+                    slideIntoContainer(
                         AnimatedContentScope.SlideDirection.Start,
                         tween(TransitionAnimationDuration)
                     )
-                    else -> null
+                } else {
+                    null
                 }
             },
-            popExitTransition = {
-                when (targetState.destination.route) {
-                    home -> slideOutOfContainer(
+            exitTransition = {
+                if (destinationRoutes.contains(targetState.destination.route)) {
+                    slideOutOfContainer(
+                        AnimatedContentScope.SlideDirection.Start,
+                        tween(TransitionAnimationDuration)
+                    )
+                } else {
+                    null
+                }
+            },
+            popEnterTransition = {
+                if (destinationRoutes.contains(initialState.destination.route)) {
+                    slideIntoContainer(
                         AnimatedContentScope.SlideDirection.End,
                         tween(TransitionAnimationDuration)
                     )
-                    else -> null
+                } else {
+                    null
+                }
+            },
+            popExitTransition = {
+                if (startingRoutes.contains(targetState.destination.route)) {
+                    slideOutOfContainer(
+                        AnimatedContentScope.SlideDirection.End,
+                        tween(TransitionAnimationDuration)
+                    )
+                } else {
+                    null
                 }
             },
             content = content
@@ -199,6 +219,7 @@ sealed class Route(val path: String)
 object Main : Route("main")
 object AddCityTime : Route("add_city_time")
 object Settings : Route("settings")
+object TimerSound : Route("timer_sound")
 
 sealed interface NavigationType {
     object BottomBar : NavigationType

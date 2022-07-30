@@ -26,6 +26,9 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
+import android.media.AudioAttributes
+import android.media.MediaPlayer
+import android.net.Uri
 import android.os.Binder
 import android.os.IBinder
 import android.os.SystemClock
@@ -53,11 +56,14 @@ import kotlin.time.Duration.Companion.nanoseconds
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -83,6 +89,9 @@ class TimerService : LifecycleService() {
 
     private val _timers = MutableStateFlow<List<Timer>>(emptyList())
     val timers: StateFlow<List<Timer>> = _timers.asStateFlow()
+
+    private val anyTimerFinished: Flow<Boolean>
+        get() = timers.map { timers -> timers.any { it.isNegative } }.distinctUntilChanged()
 
     private var timerJob: Job? = null
 
@@ -125,6 +134,8 @@ class TimerService : LifecycleService() {
     }
 
     private val settingsRepository by inject<SettingsRepository>()
+
+    private var currentMediaPlayer: MediaPlayer? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -194,17 +205,33 @@ class TimerService : LifecycleService() {
     private fun observeNotifications() {
         lifecycleScope.launch {
             launch {
-                timers.map { list -> list.any { it.isNegative } }
-                    .distinctUntilChanged()
-                    .combine(settingsRepository.vibrateForTimers) { timersUp, vibrateEnabled ->
-                        vibrateEnabled && timersUp
-                    }.collect {
-                        if (it) {
-                            vibrator.vibrate(TimerVibrationEffect)
-                        } else {
-                            vibrator.cancel()
+                anyTimerFinished.combine(settingsRepository.vibrateForTimers) { anyTimerFinished, vibrateEnabled ->
+                    vibrateEnabled && anyTimerFinished
+                }.collect {
+                    if (it) {
+                        vibrator.vibrate(TimerVibrationEffect)
+                    } else {
+                        vibrator.cancel()
+                    }
+                }
+            }
+            launch(Dispatchers.IO) {
+                anyTimerFinished.combine(settingsRepository.timerSoundUri.filterNot { it == Uri.EMPTY }) { anyTimerFinished, uri ->
+                    disposeCurrentMediaPlayer()
+                    if (anyTimerFinished) {
+                        currentMediaPlayer = MediaPlayer().apply {
+                            setAudioAttributes(
+                                AudioAttributes.Builder()
+                                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                                    .setUsage(AudioAttributes.USAGE_ALARM)
+                                    .build()
+                            )
+                            setDataSource(this@TimerService, uri)
+                            prepare()
+                            start()
                         }
                     }
+                }.collect()
             }
             timers
                 .map { list -> list.filter { it.hasStarted } }
@@ -218,6 +245,15 @@ class TimerService : LifecycleService() {
                     delay(1000)
                 }
         }
+    }
+
+    private fun disposeCurrentMediaPlayer() {
+        currentMediaPlayer?.let {
+            it.stop()
+            it.reset()
+            it.release()
+        }
+        currentMediaPlayer = null
     }
 
     suspend fun addTimer(duration: Duration): Result<Unit> {
@@ -520,6 +556,7 @@ class TimerService : LifecycleService() {
     }
 
     override fun onDestroy() {
+        disposeCurrentMediaPlayer()
         unregisterReceiver()
         notificationManager.cancelAll()
         super.onDestroy()

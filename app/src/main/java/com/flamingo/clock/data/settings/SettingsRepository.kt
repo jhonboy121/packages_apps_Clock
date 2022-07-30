@@ -17,8 +17,10 @@
 package com.flamingo.clock.data.settings
 
 import android.content.Context
+import android.net.Uri
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 class SettingsRepository(context: Context) {
@@ -39,6 +41,12 @@ class SettingsRepository(context: Context) {
 
     val vibrateForTimers: Flow<Boolean>
         get() = settings.data.map { it.vibrateForTimers }
+
+    val timerSoundUri: Flow<Uri>
+        get() = settings.data.map { Uri.parse(it.timerSoundUri) }
+
+    val userSoundUris: Flow<List<Uri>>
+        get() = settings.data.map { list -> list.userSoundUrisList.map { Uri.parse(it) } }
 
     suspend fun setClockStyle(clockStyle: ClockStyle) {
         settings.updateData {
@@ -84,6 +92,34 @@ class SettingsRepository(context: Context) {
         settings.updateData {
             it.toBuilder()
                 .setVibrateForTimers(vibrate)
+                .build()
+        }
+    }
+
+    suspend fun setTimerSound(uri: Uri) {
+        settings.updateData {
+            it.toBuilder()
+                .setTimerSoundUri(uri.toString())
+                .build()
+        }
+    }
+
+    suspend fun addUserSound(uri: Uri) {
+        settings.updateData {
+            it.toBuilder()
+                .addUserSoundUris(uri.toString())
+                .build()
+        }
+    }
+
+    suspend fun removeUserSound(uri: Uri) {
+        val newUris = settings.data.map { it.userSoundUrisList }.first().apply {
+            remove(uri.toString())
+        }
+        settings.updateData {
+            it.toBuilder()
+                .clearUserSoundUris()
+                .addAllUserSoundUris(newUris)
                 .build()
         }
     }
