@@ -27,8 +27,9 @@ message Settings {
 
   bool vibrate_for_timers = 5;
   string timer_sound_uri = 6;
+  int32 timer_volume_rise_duration = 7;
 
-  repeated string user_sound_uris = 7;
+  repeated string user_sound_uris = 8;
 }
 
 enum ClockStyle {

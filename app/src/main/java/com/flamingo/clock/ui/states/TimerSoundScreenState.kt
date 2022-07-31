@@ -107,7 +107,7 @@ class TimerSoundScreenState(
     private fun loadDeviceSounds() {
         val ringtones =
             mutableListOf<Audio>(Audio.Silent(context.getString(R.string.silent)))
-        ringtoneManager.cursor.use { cursor ->
+        ringtoneManager.cursor.let { cursor ->
             cursor.moveToFirst()
             do {
                 val ringtoneInfo = DeviceAudio(

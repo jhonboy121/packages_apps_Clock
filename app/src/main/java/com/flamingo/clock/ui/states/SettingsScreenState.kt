@@ -69,6 +69,9 @@ class SettingsScreenState(
     val vibrateForTimers: Flow<Boolean>
         get() = settingsRepository.vibrateForTimers
 
+    val timerVolumeRiseDuration: Flow<Int>
+        get() = settingsRepository.timerVolumeRiseDuration
+
     init {
         coroutineScope.launch(Dispatchers.Default) {
             loadAllTimeZones()
@@ -134,6 +137,12 @@ class SettingsScreenState(
     fun setVibrateForTimers(vibrate: Boolean) {
         coroutineScope.launch {
             settingsRepository.setVibrateForTimers(vibrate)
+        }
+    }
+
+    fun setTimerVolumeRiseDuration(duration: Int) {
+        coroutineScope.launch {
+            settingsRepository.setTimerVolumeRiseDuration(duration)
         }
     }
 

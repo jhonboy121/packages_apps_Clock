@@ -35,6 +35,7 @@ val DEFAULT_TIME_FORMAT = TimeFormat.TWELVE_HOUR
 
 const val DEFAULT_VIBRATE_FOR_TIMERS = false
 val DEFAULT_TIMER_SOUND_URI: Uri = Uri.EMPTY
+const val DEFAULT_TIMER_VOLUME_RISE_DURATION = 0
 
 object SettingsSerializer : Serializer<Settings> {
 
@@ -44,6 +45,7 @@ object SettingsSerializer : Serializer<Settings> {
         .setTimeFormat(DEFAULT_TIME_FORMAT)
         .setVibrateForTimers(DEFAULT_VIBRATE_FOR_TIMERS)
         .setTimerSoundUri(DEFAULT_TIMER_SOUND_URI.toString())
+        .setTimerVolumeRiseDuration(DEFAULT_TIMER_VOLUME_RISE_DURATION)
         .build()
 
     override suspend fun readFrom(input: InputStream): Settings {

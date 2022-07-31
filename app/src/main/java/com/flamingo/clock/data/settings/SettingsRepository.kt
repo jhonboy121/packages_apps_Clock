@@ -42,6 +42,8 @@ class SettingsRepository(context: Context) {
     val userSoundUris: Flow<List<Uri>> =
         settings.data.map { list -> list.userSoundUrisList.map { Uri.parse(it) } }
 
+    val timerVolumeRiseDuration: Flow<Int> = settings.data.map { it.timerVolumeRiseDuration }
+
     suspend fun setClockStyle(clockStyle: ClockStyle) {
         settings.updateData {
             it.toBuilder()
@@ -118,6 +120,14 @@ class SettingsRepository(context: Context) {
             it.toBuilder()
                 .clearUserSoundUris()
                 .addAllUserSoundUris(newUris)
+                .build()
+        }
+    }
+
+    suspend fun setTimerVolumeRiseDuration(duration: Int) {
+        settings.updateData {
+            it.toBuilder()
+                .setTimerVolumeRiseDuration(duration)
                 .build()
         }
     }

@@ -20,6 +20,9 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
@@ -28,6 +31,7 @@ import com.flamingo.clock.R
 import com.flamingo.clock.data.settings.ClockStyle
 import com.flamingo.clock.data.settings.DEFAULT_CLOCK_STYLE
 import com.flamingo.clock.data.settings.DEFAULT_SHOW_SECONDS
+import com.flamingo.clock.data.settings.DEFAULT_TIMER_VOLUME_RISE_DURATION
 import com.flamingo.clock.data.settings.DEFAULT_TIME_FORMAT
 import com.flamingo.clock.data.settings.DEFAULT_VIBRATE_FOR_TIMERS
 import com.flamingo.clock.data.settings.TimeFormat
@@ -35,6 +39,7 @@ import com.flamingo.clock.ui.TimerSound
 import com.flamingo.clock.ui.states.SettingsScreenState
 import com.flamingo.clock.ui.states.rememberSettingsScreenState
 import com.flamingo.support.compose.ui.layout.CollapsingToolbarLayout
+import com.flamingo.support.compose.ui.preferences.DiscreteSeekBarPreference
 import com.flamingo.support.compose.ui.preferences.Entry
 import com.flamingo.support.compose.ui.preferences.ListPreference
 import com.flamingo.support.compose.ui.preferences.Preference
@@ -139,6 +144,26 @@ fun LazyListScope.timerSettings(state: SettingsScreenState, openTimerSoundScreen
             onClick = {
                 openTimerSoundScreen()
             }
+        )
+    }
+    item(key = R.string.gradually_increase_volume_title) {
+        val settingDuration by state.timerVolumeRiseDuration.collectAsState(
+            DEFAULT_TIMER_VOLUME_RISE_DURATION
+        )
+        var duration by remember(settingDuration) { mutableStateOf(settingDuration) }
+        DiscreteSeekBarPreference(
+            title = stringResource(id = R.string.gradually_increase_volume_title),
+            summary = stringResource(id = R.string.gradually_increase_volume_summary),
+            min = 0,
+            max = 60,
+            value = duration,
+            onProgressChanged = {
+                duration = it
+            },
+            onProgressChangeFinished = {
+                state.setTimerVolumeRiseDuration(duration)
+            },
+            showProgressText = true
         )
     }
     item(key = R.string.vibrate_for_timers) {

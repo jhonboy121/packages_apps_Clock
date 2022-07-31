@@ -92,6 +92,11 @@
     <string name="home_time_zone">Home time zone</string>
     <string name="vibrate_for_timers">Vibrate for timers</string>
     <string name="vibrate_for_timers_summary">Whether to vibrate repeatedly when a timer is up</string>
+    <string name="gradually_increase_volume_title">Gradually increase volume</string>
+    <string name="gradually_increase_volume_summary">
+        Timer sound volume gradually increase from 0 to maximum in this specified duration.
+        A duration of 0 would mean that timer sound will play at maximum volume all the time.
+    </string>
 
     <!-- Timer sound -->
     <string name="timer_sound">Timer sound</string>

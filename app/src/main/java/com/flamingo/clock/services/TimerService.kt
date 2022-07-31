@@ -35,7 +35,6 @@ import android.os.IBinder
 import android.os.SystemClock
 import android.os.VibrationEffect
 import android.os.Vibrator
-import android.util.Log
 
 import androidx.annotation.GuardedBy
 import androidx.core.app.NotificationCompat
@@ -62,11 +61,14 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNot
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -155,7 +157,7 @@ class TimerService : LifecycleService() {
         createNotificationChannels()
         currentConfig = resources.configuration
         registerReceiver()
-        observeNotifications()
+        observeFinishedTimers()
     }
 
     private fun createNotificationChannels() {
@@ -206,56 +208,68 @@ class TimerService : LifecycleService() {
         }
     }
 
-    private fun observeNotifications() {
+    private fun observeFinishedTimers() {
         lifecycleScope.launch {
             launch {
-                anyTimerFinished.combine(settingsRepository.vibrateForTimers) { anyTimerFinished, vibrateEnabled ->
-                    vibrateEnabled && anyTimerFinished
-                }.collect {
-                    if (it) {
-                        vibrator.vibrate(TimerVibrationEffect)
-                    } else {
-                        vibrator.cancel()
-                    }
-                }
+                vibrateForFinishedTimers()
             }
             launch(Dispatchers.IO) {
-                anyTimerFinished.combine(settingsRepository.timerSoundUri.filterNot { it == Uri.EMPTY }) { anyTimerFinished, uri ->
-                    disposeCurrentMediaPlayer()
-                    if (!anyTimerFinished) return@combine
-                    val persistedUris = contentResolver.persistedUriPermissions.map { it.uri }
-                    val isUserSound = persistedUris.contains(uri)
-                    val isDeviceSound = ringtoneManager.getRingtonePosition(uri) != -1
-                    if (isUserSound || isDeviceSound) {
-                        currentMediaPlayer = MediaPlayer().apply {
-                            setAudioAttributes(
-                                AudioAttributes.Builder()
-                                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                                    .setUsage(AudioAttributes.USAGE_ALARM)
-                                    .build()
-                            )
-                            setDataSource(this@TimerService, uri)
-                            prepare()
-                            start()
-                        }
-                    } else {
-                        Log.e(TAG, "Application does not hold read permission for current timer sound uri")
-                    }
-                    return@combine
-                }.collect()
+                playSoundForFinishedTimers()
             }
-            timers
-                .map { list -> list.filter { it.hasStarted } }
-                .collect { list ->
-                    list.forEach {
-                        notificationManager.notify(
-                            BASE_NOTIFICATION_ID + it.id,
-                            createNotification(it)
-                        )
-                    }
-                    delay(1000)
-                }
+            observeNotifications()
         }
+    }
+
+    private suspend fun vibrateForFinishedTimers() {
+        anyTimerFinished.combine(settingsRepository.vibrateForTimers) { anyTimerFinished, vibrateEnabled ->
+            vibrateEnabled && anyTimerFinished
+        }.collect {
+            if (it) {
+                vibrator.vibrate(TimerVibrationEffect)
+            } else {
+                vibrator.cancel()
+            }
+        }
+    }
+
+    private suspend fun playSoundForFinishedTimers() {
+        anyTimerFinished.combine(
+            settingsRepository.timerSoundUri.filterNot { it == Uri.EMPTY }
+        ) { anyTimerFinished, uri ->
+            anyTimerFinished to uri
+        }.onEach { disposeCurrentMediaPlayer() }
+            .filter { it.first }
+            .map { it.second }
+            .filter { uri ->
+                val persistedUris = contentResolver.persistedUriPermissions.map { it.uri }
+                val isUserSound = persistedUris.contains(uri)
+                val isDeviceSound = ringtoneManager.getRingtonePosition(uri) != -1
+                isDeviceSound || isUserSound
+            }
+            .collectLatest { uri ->
+                currentMediaPlayer = MediaPlayer().apply {
+                    setAudioAttributes(
+                        AudioAttributes.Builder()
+                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                            .setUsage(AudioAttributes.USAGE_ALARM)
+                            .build()
+                    )
+                    setDataSource(this@TimerService, uri)
+                    prepare()
+                }
+                val volumeRiseDuration = settingsRepository.timerVolumeRiseDuration.first()
+                if (volumeRiseDuration == 0) {
+                    currentMediaPlayer?.start()
+                } else {
+                    currentMediaPlayer?.setVolume(0f, 0f)
+                    currentMediaPlayer?.start()
+                    for (i in 1..volumeRiseDuration) {
+                        val volume = i / volumeRiseDuration.toFloat()
+                        currentMediaPlayer?.setVolume(volume, volume)
+                        delay(1000)
+                    }
+                }
+            }
     }
 
     private fun disposeCurrentMediaPlayer() {
@@ -265,6 +279,20 @@ class TimerService : LifecycleService() {
             it.release()
         }
         currentMediaPlayer = null
+    }
+
+    private suspend fun observeNotifications() {
+        timers
+            .map { list -> list.filter { it.hasStarted } }
+            .collect { list ->
+                list.forEach {
+                    notificationManager.notify(
+                        BASE_NOTIFICATION_ID + it.id,
+                        createNotification(it)
+                    )
+                }
+                delay(1000)
+            }
     }
 
     suspend fun addTimer(duration: Duration): Result<Unit> {
@@ -579,8 +607,6 @@ class TimerService : LifecycleService() {
     }
 
     companion object {
-        private const val TAG = "TimerService"
-
         private val RUNNING_TIMER_NOTIFICATION_CHANNEL_ID =
             "${TimerService::class.qualifiedName}_Running_Timers_NotificationChannel"
         private val FINISHED_TIMER_NOTIFICATION_CHANNEL_ID =
