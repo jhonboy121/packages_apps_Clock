@@ -27,8 +27,7 @@ class UserDataRepository(context: Context) {
 
     private val userData = context.userData
 
-    val cityTimeZones: Flow<List<CityTimeZone>>
-        get() = userData.data.map { it.cityTimeZonesList }
+    val cityTimeZones: Flow<List<CityTimeZone>> = userData.data.map { it.cityTimeZonesList }
 
     suspend fun saveCityTime(cityTimeZone: CityTimeZone) {
         userData.updateData {

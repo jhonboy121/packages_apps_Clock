@@ -90,8 +90,9 @@ class TimerService : LifecycleService() {
     private val _timers = MutableStateFlow<List<Timer>>(emptyList())
     val timers: StateFlow<List<Timer>> = _timers.asStateFlow()
 
-    private val anyTimerFinished: Flow<Boolean>
-        get() = timers.map { timers -> timers.any { it.isNegative } }.distinctUntilChanged()
+    private val anyTimerFinished: Flow<Boolean> =
+        timers.map { timers -> timers.any { it.isNegative } }
+            .distinctUntilChanged()
 
     private var timerJob: Job? = null
 

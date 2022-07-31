@@ -54,26 +54,25 @@ class TimerScreenState(
     private val context: Context
 ) {
 
-    val timers: Flow<List<TimerInfo>>
-        get() = timerService?.timers?.map { list ->
-            list.map {
-                val progress =
-                    it.remainingDuration.inWholeNanoseconds / it.totalDuration.inWholeNanoseconds.toFloat()
-                it.remainingDuration.absoluteValue.toComponents { hours, minutes, seconds, _ ->
-                    TimerInfo(
-                        id = it.id,
-                        label = it.label,
-                        remainingHours = hours.toInt(),
-                        remainingMinutes = minutes,
-                        remainingSeconds = seconds,
-                        isNegative = it.isNegative,
-                        progress = progress.coerceAtLeast(0f),
-                        hasStarted = it.hasStarted,
-                        isPaused = it.isPaused
-                    )
-                }
+    val timers: Flow<List<TimerInfo>> = timerService?.timers?.map { list ->
+        list.map {
+            val progress =
+                it.remainingDuration.inWholeNanoseconds / it.totalDuration.inWholeNanoseconds.toFloat()
+            it.remainingDuration.absoluteValue.toComponents { hours, minutes, seconds, _ ->
+                TimerInfo(
+                    id = it.id,
+                    label = it.label,
+                    remainingHours = hours.toInt(),
+                    remainingMinutes = minutes,
+                    remainingSeconds = seconds,
+                    isNegative = it.isNegative,
+                    progress = progress.coerceAtLeast(0f),
+                    hasStarted = it.hasStarted,
+                    isPaused = it.isPaused
+                )
             }
-        }?.distinctUntilChanged()?.flowOn(Dispatchers.Default) ?: emptyFlow()
+        }
+    }?.distinctUntilChanged()?.flowOn(Dispatchers.Default) ?: emptyFlow()
 
     var userDurationInput by mutableStateOf(DEFAULT_USER_INPUT_TEXT)
         private set

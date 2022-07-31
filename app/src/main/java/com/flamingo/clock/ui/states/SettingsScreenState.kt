@@ -38,6 +38,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
@@ -61,11 +62,9 @@ class SettingsScreenState(
     private val locale = context.resources.configuration.locales[0]
 
     private val _timeZoneEntries = MutableStateFlow<List<Entry<String>>>(emptyList())
-    val timeZoneEntries: Flow<List<Entry<String>>>
-        get() = _timeZoneEntries
+    val timeZoneEntries: Flow<List<Entry<String>>> = _timeZoneEntries.asStateFlow()
 
-    val homeTimeZone: Flow<String?>
-        get() = settingsRepository.homeTimeZone.map { it.ifBlank { null } }
+    val homeTimeZone: Flow<String?> = settingsRepository.homeTimeZone.map { it.ifBlank { null } }
 
     val vibrateForTimers: Flow<Boolean>
         get() = settingsRepository.vibrateForTimers

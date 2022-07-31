@@ -37,6 +37,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
@@ -62,8 +63,8 @@ class AddCityTimeScreenState(
     private val time = MutableStateFlow(System.currentTimeMillis())
 
     private val _filteredCityTimes = MutableStateFlow<List<CityTimeZone>>(emptyList())
-    val cityTimes: Flow<List<CityTime>>
-        get() = _filteredCityTimes.combine(userDataRepository.cityTimeZones) { list, savedList ->
+    val cityTimes: Flow<List<CityTime>> = _filteredCityTimes.asStateFlow()
+        .combine(userDataRepository.cityTimeZones) { list, savedList ->
             list.filter {
                 !savedList.contains(it)
             }

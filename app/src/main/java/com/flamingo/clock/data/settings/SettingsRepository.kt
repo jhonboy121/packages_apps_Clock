@@ -27,26 +27,20 @@ class SettingsRepository(context: Context) {
 
     private val settings = context.settings
 
-    val clockStyle: Flow<ClockStyle>
-        get() = settings.data.map { it.clockStyle }
+    val clockStyle: Flow<ClockStyle> = settings.data.map { it.clockStyle }
 
-    val showSeconds: Flow<Boolean>
-        get() = settings.data.map { it.showSeconds }
+    val showSeconds: Flow<Boolean> = settings.data.map { it.showSeconds }
 
-    val timeFormat: Flow<TimeFormat>
-        get() = settings.data.map { it.timeFormat }
+    val timeFormat: Flow<TimeFormat> = settings.data.map { it.timeFormat }
 
-    val homeTimeZone: Flow<String>
-        get() = settings.data.map { it.homeTimeZone }
+    val homeTimeZone: Flow<String> = settings.data.map { it.homeTimeZone }
 
-    val vibrateForTimers: Flow<Boolean>
-        get() = settings.data.map { it.vibrateForTimers }
+    val vibrateForTimers: Flow<Boolean> = settings.data.map { it.vibrateForTimers }
 
-    val timerSoundUri: Flow<Uri>
-        get() = settings.data.map { Uri.parse(it.timerSoundUri) }
+    val timerSoundUri: Flow<Uri> = settings.data.map { Uri.parse(it.timerSoundUri) }
 
-    val userSoundUris: Flow<List<Uri>>
-        get() = settings.data.map { list -> list.userSoundUrisList.map { Uri.parse(it) } }
+    val userSoundUris: Flow<List<Uri>> =
+        settings.data.map { list -> list.userSoundUrisList.map { Uri.parse(it) } }
 
     suspend fun setClockStyle(clockStyle: ClockStyle) {
         settings.updateData {

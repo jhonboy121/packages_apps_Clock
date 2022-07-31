@@ -66,15 +66,14 @@ class TimerSoundScreenState(
     private val _userAudio = MutableStateFlow<List<UserAudio>>(emptyList())
     val userAudio: StateFlow<List<UserAudio>> = _userAudio.asStateFlow()
 
-    val selectedAudio: Flow<Audio?>
-        get() = _deviceAudio.combine(_userAudio) { deviceAudio, userAudio ->
-            mutableListOf<Audio>().apply {
-                addAll(deviceAudio)
-                addAll(userAudio)
-            }.toList()
-        }.combine(settingsRepository.timerSoundUri) { audios, uri ->
-            audios.find { it.uri == uri }
-        }.flowOn(Dispatchers.Default)
+    val selectedAudio: Flow<Audio?> = deviceAudio.combine(userAudio) { deviceAudio, userAudio ->
+        mutableListOf<Audio>().apply {
+            addAll(deviceAudio)
+            addAll(userAudio)
+        }.toList()
+    }.combine(settingsRepository.timerSoundUri) { audios, uri ->
+        audios.find { it.uri == uri }
+    }.flowOn(Dispatchers.Default)
 
     private var currentPlayer: MediaPlayerWrapper? = null
     var nowPlayingSound by mutableStateOf<Audio?>(null)

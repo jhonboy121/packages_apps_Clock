@@ -48,6 +48,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -81,26 +82,25 @@ class StopwatchService : LifecycleService() {
         get() = _running
 
     private val _time = MutableStateFlow(0L)
-    val time: Flow<Time>
-        get() = _time.map { Time.fromMillis(it) }.distinctUntilChanged()
+    val time: Flow<Time> = _time.asStateFlow()
+        .map { Time.fromMillis(it) }
+        .distinctUntilChanged()
 
-    private val notificationTime: Flow<String>
-        get() = time.map { formatTime(it, true) }.distinctUntilChanged()
+    private val notificationTime: Flow<String> =
+        time.map { formatTime(it, true) }
+            .distinctUntilChanged()
 
     private val lapMutex = Mutex()
 
     @GuardedBy("lapMutex")
     private val _currentLap = MutableStateFlow(Lap(1))
-
-    val currentLap: StateFlow<Lap>
-        get() = _currentLap
+    val currentLap: StateFlow<Lap> = _currentLap.asStateFlow()
 
     @GuardedBy("lapMutex")
     private val lapsList = mutableListOf<Lap>()
 
     private val _laps = MutableStateFlow<List<Lap>>(emptyList())
-    val laps: StateFlow<List<Lap>>
-        get() = _laps
+    val laps: StateFlow<List<Lap>> = _laps.asStateFlow()
 
     private var receiverRegistered = false
     private val actionBroadcastReceiver = object : BroadcastReceiver() {

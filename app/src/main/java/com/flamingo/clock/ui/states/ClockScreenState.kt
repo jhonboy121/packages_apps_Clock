@@ -41,6 +41,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
@@ -57,18 +58,16 @@ class ClockScreenState(
     context: Context,
 ) {
 
-    val cityTimes: Flow<List<CityTime>>
-        get() = userDataRepository.cityTimeZones.combine(
-            _time.map { it.minute }.distinctUntilChanged()
-        ) { list, _ ->
-            list.map {
-                CityTime.fromCityTimeZone(it)
-            }
-        }.flowOn(Dispatchers.Default)
-
     private val _time = MutableStateFlow(Time.now(resolution = Resolution.SECOND))
-    val time: StateFlow<Time>
-        get() = _time
+    val time: StateFlow<Time> = _time.asStateFlow()
+
+    val cityTimes: Flow<List<CityTime>> = userDataRepository.cityTimeZones.combine(
+        time.map { it.minute }.distinctUntilChanged()
+    ) { list, _ ->
+        list.map {
+            CityTime.fromCityTimeZone(it)
+        }
+    }.flowOn(Dispatchers.Default)
 
     val showSeconds: Flow<Boolean>
         get() = settingsRepository.showSeconds
@@ -76,8 +75,7 @@ class ClockScreenState(
     private val locale = context.resources.configuration.locales[0]
 
     private val _date = MutableStateFlow(Date.now(locale))
-    val date: StateFlow<Date>
-        get() = _date
+    val date: StateFlow<Date> = _date.asStateFlow()
 
     val clockStyle: Flow<ClockStyle>
         get() = settingsRepository.clockStyle
@@ -86,26 +84,25 @@ class ClockScreenState(
         get() = settingsRepository.timeFormat
 
     private val homeTimeZoneName = context.getString(R.string.home)
-    val homeTime: Flow<CityTime?>
-        get() = settingsRepository.homeTimeZone.map {
-            if (it.isBlank()) {
-                return@map null
-            }
-            val time = Time.now(
-                ZoneId.of(it),
-                resolution = Resolution.MINUTE,
-                ignoreTimeZoneDifference = false
-            )
-            if (time.timeZoneDifference is TimeZoneDifference.Zero) {
-                return@map null
-            }
-            CityTime(
-                city = homeTimeZoneName,
-                country = homeTimeZoneName,
-                timezone = it,
-                time = time
-            )
+    val homeTime: Flow<CityTime?> = settingsRepository.homeTimeZone.map {
+        if (it.isBlank()) {
+            return@map null
         }
+        val time = Time.now(
+            ZoneId.of(it),
+            resolution = Resolution.MINUTE,
+            ignoreTimeZoneDifference = false
+        )
+        if (time.timeZoneDifference is TimeZoneDifference.Zero) {
+            return@map null
+        }
+        CityTime(
+            city = homeTimeZoneName,
+            country = homeTimeZoneName,
+            timezone = it,
+            time = time
+        )
+    }
 
     init {
         coroutineScope.launch {
