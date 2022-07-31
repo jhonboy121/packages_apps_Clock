@@ -134,13 +134,18 @@ fun LazyListScope.clockSettings(state: SettingsScreenState) {
     }
 }
 
-fun LazyListScope.timerSettings(state: SettingsScreenState, openTimerSoundScreen: () -> Unit) {
+fun LazyListScope.timerSettings(
+    state: SettingsScreenState,
+    openTimerSoundScreen: () -> Unit
+) {
     item(key = R.string.timer) {
         PreferenceGroupHeader(title = stringResource(id = R.string.timer))
     }
     item(key = R.string.timer_sound) {
+        val timerSound by state.timerSound.collectAsState(null)
         Preference(
             title = stringResource(id = R.string.timer_sound),
+            summary = timerSound,
             onClick = {
                 openTimerSoundScreen()
             }

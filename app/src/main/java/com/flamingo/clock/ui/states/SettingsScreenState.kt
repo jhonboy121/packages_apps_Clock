@@ -48,7 +48,8 @@ class SettingsScreenState(
     private val settingsRepository: SettingsRepository,
     private val cityTimeZoneRepository: CityTimeZoneRepository,
     private val coroutineScope: CoroutineScope,
-    private val context: Context
+    private val context: Context,
+    timerSoundScreenState: TimerSoundScreenState
 ) {
     val clockStyle: Flow<ClockStyle>
         get() = settingsRepository.clockStyle
@@ -71,6 +72,8 @@ class SettingsScreenState(
 
     val timerVolumeRiseDuration: Flow<Int>
         get() = settingsRepository.timerVolumeRiseDuration
+
+    val timerSound: Flow<String?> = timerSoundScreenState.selectedAudio.map { it?.title }
 
     init {
         coroutineScope.launch(Dispatchers.Default) {
@@ -160,12 +163,20 @@ fun rememberSettingsScreenState(
     settingsRepository: SettingsRepository = get(),
     cityTimeZoneRepository: CityTimeZoneRepository = get(),
     coroutineScope: CoroutineScope = rememberCoroutineScope(),
-    context: Context = LocalContext.current
-) = remember(settingsRepository, cityTimeZoneRepository, coroutineScope, context) {
+    context: Context = LocalContext.current,
+    timerSoundScreenState: TimerSoundScreenState = rememberTimerSoundScreenState()
+) = remember(
+    settingsRepository,
+    cityTimeZoneRepository,
+    coroutineScope,
+    context,
+    timerSoundScreenState
+) {
     SettingsScreenState(
         settingsRepository = settingsRepository,
         cityTimeZoneRepository = cityTimeZoneRepository,
         coroutineScope = coroutineScope,
-        context = context
+        context = context,
+        timerSoundScreenState = timerSoundScreenState
     )
 }
