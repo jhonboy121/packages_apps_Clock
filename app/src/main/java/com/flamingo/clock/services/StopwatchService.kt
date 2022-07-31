@@ -134,6 +134,7 @@ class StopwatchService : LifecycleService() {
                 getString(R.string.lap),
                 lapIntent
             )
+            .setSilent(true)
         setupNotificationChannel()
     }
 
@@ -292,6 +293,7 @@ class StopwatchService : LifecycleService() {
                 getString(R.string.reset),
                 resetIntent
             )
+            .setSilent(true)
             .build()
         notificationManager.notify(NOTIFICATION_ID, notification)
     }
