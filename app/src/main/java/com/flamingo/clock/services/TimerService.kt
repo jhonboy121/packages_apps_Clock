@@ -28,6 +28,7 @@ import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.media.AudioAttributes
 import android.media.MediaPlayer
+import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Binder
 import android.os.IBinder
@@ -136,6 +137,7 @@ class TimerService : LifecycleService() {
     }
 
     private val settingsRepository by inject<SettingsRepository>()
+    private val ringtoneManager by inject<RingtoneManager>()
 
     private var currentMediaPlayer: MediaPlayer? = null
 
@@ -222,7 +224,9 @@ class TimerService : LifecycleService() {
                     disposeCurrentMediaPlayer()
                     if (!anyTimerFinished) return@combine
                     val persistedUris = contentResolver.persistedUriPermissions.map { it.uri }
-                    if (persistedUris.contains(uri)) {
+                    val isUserSound = persistedUris.contains(uri)
+                    val isDeviceSound = ringtoneManager.getRingtonePosition(uri) != -1
+                    if (isUserSound || isDeviceSound) {
                         currentMediaPlayer = MediaPlayer().apply {
                             setAudioAttributes(
                                 AudioAttributes.Builder()

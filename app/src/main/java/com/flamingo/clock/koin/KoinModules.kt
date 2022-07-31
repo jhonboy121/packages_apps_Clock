@@ -16,6 +16,8 @@
 
 package com.flamingo.clock.koin
 
+import android.media.RingtoneManager
+
 import com.flamingo.clock.data.tz.CityTimeZonesData
 import com.flamingo.clock.data.tz.CityTimeZoneRepository
 import com.flamingo.clock.data.settings.SettingsRepository
@@ -36,5 +38,10 @@ val clockModule = module {
     }
     single {
         SettingsRepository(context = androidContext())
+    }
+    single {
+        RingtoneManager(androidContext()).apply {
+            setType(RingtoneManager.TYPE_ALARM)
+        }
     }
 }

@@ -54,12 +54,9 @@ import org.koin.androidx.compose.get
 class TimerSoundScreenState(
     private val settingsRepository: SettingsRepository,
     private val coroutineScope: CoroutineScope,
-    private val context: Context
+    private val context: Context,
+    private val ringtoneManager: RingtoneManager
 ) {
-
-    private val ringtoneManager = RingtoneManager(context).apply {
-        setType(RingtoneManager.TYPE_ALARM)
-    }
 
     private val _deviceAudio = MutableStateFlow<List<Audio>>(emptyList())
     val deviceAudio: StateFlow<List<Audio>> = _deviceAudio.asStateFlow()
@@ -285,13 +282,15 @@ class MediaPlayerWrapper(
 fun rememberTimerSoundScreenState(
     context: Context = LocalContext.current,
     settingsRepository: SettingsRepository = get(),
-    coroutineScope: CoroutineScope = rememberCoroutineScope()
+    coroutineScope: CoroutineScope = rememberCoroutineScope(),
+    ringtoneManager: RingtoneManager = get(),
 ): TimerSoundScreenState {
-    val state = remember(context, settingsRepository, coroutineScope) {
+    val state = remember(context, settingsRepository, coroutineScope, ringtoneManager) {
         TimerSoundScreenState(
             context = context,
             settingsRepository = settingsRepository,
-            coroutineScope = coroutineScope
+            coroutineScope = coroutineScope,
+            ringtoneManager = ringtoneManager
         )
     }
     DisposableEffect(state) {
