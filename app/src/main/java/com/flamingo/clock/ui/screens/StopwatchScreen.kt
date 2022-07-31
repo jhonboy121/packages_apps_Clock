@@ -386,7 +386,6 @@ fun ProgressWithTime(
     }
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 private fun HorizontalControlButtons(
     hasStarted: Boolean,
@@ -402,19 +401,13 @@ private fun HorizontalControlButtons(
         modifier = modifier
     ) {
         val leftButtonAlpha by animateFloatAsState(targetValue = if (hasStarted) 1f else 0f)
-        IconButton(
+        ResetButton(
             modifier = Modifier
                 .size(2 * ButtonSizeVertical / 3)
                 .clip(CircleShape)
                 .alpha(leftButtonAlpha),
             onClick = onResetRequest,
-            colors = IconButtonDefaults.filledIconButtonColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.baseline_reset_24),
-                contentDescription = stringResource(id = R.string.reset_button_content_desc)
-            )
-        }
+        )
         val transition = updateTransition(targetState = isRunning, label = null)
         val aspectRatio by transition.animateFloat(label = ButtonAspectRatioAnimation) {
             if (it) 1.5f else 1f
@@ -422,39 +415,25 @@ private fun HorizontalControlButtons(
         val cornerRadius by transition.animateDp(label = ButtonCornerRadiusAnimation) {
             ButtonSizeVertical / (if (it) 4 else 2)
         }
-        IconButton(
+        PlayPauseButton(
             modifier = Modifier
                 .height(ButtonSizeVertical)
                 .aspectRatio(aspectRatio)
                 .clip(RoundedCornerShape(cornerRadius)),
             onClick = onToggleState,
-            colors = IconButtonDefaults.filledIconButtonColors(containerColor = MaterialTheme.colorScheme.primary)
-        ) {
-            AnimatedContent(targetState = isRunning) {
-                Icon(
-                    painter = painterResource(id = if (it) R.drawable.baseline_pause_24 else R.drawable.baseline_play_arrow_24),
-                    contentDescription = stringResource(id = R.string.stopwatch_start_stop_button_content_desc)
-                )
-            }
-        }
+            isRunning = isRunning
+        )
         val rightButtonAlpha by animateFloatAsState(targetValue = if (hasStarted && isRunning) 1f else 0f)
-        IconButton(
+        LapButton(
             modifier = Modifier
                 .size(2 * ButtonSizeVertical / 3)
                 .clip(CircleShape)
                 .alpha(rightButtonAlpha),
-            onClick = onLapSetRequest,
-            colors = IconButtonDefaults.filledIconButtonColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.outline_stopwatch_24),
-                contentDescription = stringResource(id = R.string.lap_button_content_desc)
-            )
-        }
+            onClick = onLapSetRequest
+        )
     }
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 private fun VerticalControlButtons(
     hasStarted: Boolean,
@@ -470,19 +449,13 @@ private fun VerticalControlButtons(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         val topButtonAlpha by animateFloatAsState(targetValue = if (hasStarted && isRunning) 1f else 0f)
-        IconButton(
+        LapButton(
             modifier = Modifier
                 .alpha(topButtonAlpha)
                 .size(4 * ButtonSizeHorizontal / 5)
                 .clip(CircleShape),
-            onClick = onLapSetRequest,
-            colors = IconButtonDefaults.filledIconButtonColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.outline_stopwatch_24),
-                contentDescription = stringResource(id = R.string.lap_button_content_desc)
-            )
-        }
+            onClick = onLapSetRequest
+        )
         val transition = updateTransition(targetState = isRunning, label = null)
         val aspectRatio by transition.animateFloat(label = ButtonAspectRatioAnimation) {
             if (it) 1.25f else 1f
@@ -490,34 +463,76 @@ private fun VerticalControlButtons(
         val cornerRadius by transition.animateDp(label = ButtonCornerRadiusAnimation) {
             ButtonSizeHorizontal / (if (it) 4 else 2)
         }
-        IconButton(
+        PlayPauseButton(
             modifier = Modifier
                 .height(ButtonSizeHorizontal)
                 .aspectRatio(aspectRatio)
                 .clip(RoundedCornerShape(cornerRadius)),
             onClick = onToggleState,
-            colors = IconButtonDefaults.filledIconButtonColors(containerColor = MaterialTheme.colorScheme.primary)
-        ) {
-            AnimatedContent(targetState = isRunning) {
-                Icon(
-                    painter = painterResource(id = if (it) R.drawable.baseline_pause_24 else R.drawable.baseline_play_arrow_24),
-                    contentDescription = stringResource(id = R.string.stopwatch_start_stop_button_content_desc)
-                )
-            }
-        }
+            isRunning = isRunning
+        )
         val bottomButtonAlpha by animateFloatAsState(targetValue = if (hasStarted) 1f else 0f)
-        IconButton(
+        ResetButton(
             modifier = Modifier
                 .size(4 * ButtonSizeHorizontal / 5)
                 .clip(CircleShape)
                 .alpha(bottomButtonAlpha),
             onClick = onResetRequest,
-            colors = IconButtonDefaults.filledIconButtonColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)
-        ) {
+        )
+    }
+}
+
+@Composable
+fun ResetButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    IconButton(
+        modifier = modifier,
+        onClick = onClick,
+        colors = IconButtonDefaults.filledIconButtonColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)
+    ) {
+        Icon(
+            painter = painterResource(id = R.drawable.baseline_reset_24),
+            contentDescription = stringResource(id = R.string.reset_button_content_desc)
+        )
+    }
+}
+
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
+fun PlayPauseButton(
+    isRunning: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    IconButton(
+        modifier = modifier,
+        onClick = onClick,
+        colors = IconButtonDefaults.filledIconButtonColors(containerColor = MaterialTheme.colorScheme.primary)
+    ) {
+        AnimatedContent(targetState = isRunning) {
             Icon(
-                painter = painterResource(id = R.drawable.baseline_reset_24),
-                contentDescription = stringResource(id = R.string.reset_button_content_desc)
+                painter = painterResource(id = if (it) R.drawable.baseline_pause_24 else R.drawable.baseline_play_arrow_24),
+                contentDescription = stringResource(id = R.string.stopwatch_start_stop_button_content_desc)
             )
         }
+    }
+}
+
+@Composable
+fun LapButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    IconButton(
+        modifier = modifier,
+        onClick = onClick,
+        colors = IconButtonDefaults.filledIconButtonColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)
+    ) {
+        Icon(
+            painter = painterResource(id = R.drawable.outline_stopwatch_24),
+            contentDescription = stringResource(id = R.string.lap_button_content_desc)
+        )
     }
 }
