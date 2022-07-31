@@ -16,6 +16,7 @@
 
 package com.flamingo.clock.ui.screens
 
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -51,91 +52,104 @@ fun SettingsScreen(
         title = stringResource(id = R.string.settings),
         onBackButtonPressed = { navController.popBackStack() }
     ) {
-        item(key = R.string.clock) {
-            PreferenceGroupHeader(title = stringResource(id = R.string.clock))
-        }
-        item(key = R.string.clock_style) {
-            val style by state.clockStyle.collectAsState(initial = DEFAULT_CLOCK_STYLE)
-            ListPreference(
-                title = stringResource(id = R.string.clock_style),
-                entries = listOf(
-                    Entry(stringResource(id = R.string.analog), ClockStyle.ANALOG),
-                    Entry(stringResource(id = R.string.digital), ClockStyle.DIGITAL)
-                ),
-                value = style,
-                onEntrySelected = {
-                    state.setClockStyle(it)
-                }
-            )
-        }
-        item(key = R.string.show_seconds) {
-            val showSeconds by state.showSeconds.collectAsState(initial = DEFAULT_SHOW_SECONDS)
-            SwitchPreference(
-                title = stringResource(id = R.string.show_seconds),
-                checked = showSeconds,
-                onCheckedChange = {
-                    state.setShowSeconds(it)
-                }
-            )
-        }
-        item(key = R.string.time_format) {
-            val timeFormat by state.timeFormat.collectAsState(initial = DEFAULT_TIME_FORMAT)
-            ListPreference(
-                title = stringResource(id = R.string.time_format),
-                entries = listOf(
-                    Entry(stringResource(id = R.string.twelve_hour), TimeFormat.TWELVE_HOUR),
-                    Entry(
-                        stringResource(id = R.string.twenty_four_hour),
-                        TimeFormat.TWENTY_FOUR_HOUR
-                    )
-                ),
-                value = timeFormat,
-                onEntrySelected = {
-                    state.setTimeFormat(it)
-                }
-            )
-        }
-        item(key = R.string.home_time_zone) {
-            val allTimeZones by state.timeZoneEntries.collectAsState(emptyList())
-            val homeTimeZone by state.homeTimeZone.collectAsState(initial = null)
-            ListPreference(
-                title = stringResource(id = R.string.home_time_zone),
-                entries = allTimeZones,
-                value = homeTimeZone,
-                onEntrySelected = {
-                    state.setHomeTimeZone(it)
-                }
-            )
-        }
-        item(key = R.string.change_date_and_time) {
-            Preference(
-                title = stringResource(id = R.string.change_date_and_time),
-                onClick = {
-                    state.openDateAndTimeSettings()
-                },
-            )
-        }
-        item(key = R.string.timer) {
-            PreferenceGroupHeader(title = stringResource(id = R.string.timer))
-        }
-        item(key = R.string.timer_sound) {
-            Preference(
-                title = stringResource(id = R.string.timer_sound),
-                onClick = {
-                    navController.navigate(TimerSound.path)
-                }
-            )
-        }
-        item(key = R.string.vibrate_for_timers) {
-            val vibrateForTimers by state.vibrateForTimers.collectAsState(initial = DEFAULT_VIBRATE_FOR_TIMERS)
-            SwitchPreference(
-                title = stringResource(id = R.string.vibrate_for_timers),
-                summary = stringResource(id = R.string.vibrate_for_timers_summary),
-                checked = vibrateForTimers,
-                onCheckedChange = {
-                    state.setVibrateForTimers(it)
-                }
-            )
-        }
+        clockSettings(state = state)
+        timerSettings(
+            state = state,
+            openTimerSoundScreen = {
+                navController.navigate(TimerSound.path)
+            }
+        )
+    }
+}
+
+fun LazyListScope.clockSettings(state: SettingsScreenState) {
+    item(key = R.string.clock) {
+        PreferenceGroupHeader(title = stringResource(id = R.string.clock))
+    }
+    item(key = R.string.clock_style) {
+        val style by state.clockStyle.collectAsState(initial = DEFAULT_CLOCK_STYLE)
+        ListPreference(
+            title = stringResource(id = R.string.clock_style),
+            entries = listOf(
+                Entry(stringResource(id = R.string.analog), ClockStyle.ANALOG),
+                Entry(stringResource(id = R.string.digital), ClockStyle.DIGITAL)
+            ),
+            value = style,
+            onEntrySelected = {
+                state.setClockStyle(it)
+            }
+        )
+    }
+    item(key = R.string.show_seconds) {
+        val showSeconds by state.showSeconds.collectAsState(initial = DEFAULT_SHOW_SECONDS)
+        SwitchPreference(
+            title = stringResource(id = R.string.show_seconds),
+            checked = showSeconds,
+            onCheckedChange = {
+                state.setShowSeconds(it)
+            }
+        )
+    }
+    item(key = R.string.time_format) {
+        val timeFormat by state.timeFormat.collectAsState(initial = DEFAULT_TIME_FORMAT)
+        ListPreference(
+            title = stringResource(id = R.string.time_format),
+            entries = listOf(
+                Entry(stringResource(id = R.string.twelve_hour), TimeFormat.TWELVE_HOUR),
+                Entry(
+                    stringResource(id = R.string.twenty_four_hour),
+                    TimeFormat.TWENTY_FOUR_HOUR
+                )
+            ),
+            value = timeFormat,
+            onEntrySelected = {
+                state.setTimeFormat(it)
+            }
+        )
+    }
+    item(key = R.string.home_time_zone) {
+        val allTimeZones by state.timeZoneEntries.collectAsState(emptyList())
+        val homeTimeZone by state.homeTimeZone.collectAsState(initial = null)
+        ListPreference(
+            title = stringResource(id = R.string.home_time_zone),
+            entries = allTimeZones,
+            value = homeTimeZone,
+            onEntrySelected = {
+                state.setHomeTimeZone(it)
+            }
+        )
+    }
+    item(key = R.string.change_date_and_time) {
+        Preference(
+            title = stringResource(id = R.string.change_date_and_time),
+            onClick = {
+                state.openDateAndTimeSettings()
+            },
+        )
+    }
+}
+
+fun LazyListScope.timerSettings(state: SettingsScreenState, openTimerSoundScreen: () -> Unit) {
+    item(key = R.string.timer) {
+        PreferenceGroupHeader(title = stringResource(id = R.string.timer))
+    }
+    item(key = R.string.timer_sound) {
+        Preference(
+            title = stringResource(id = R.string.timer_sound),
+            onClick = {
+                openTimerSoundScreen()
+            }
+        )
+    }
+    item(key = R.string.vibrate_for_timers) {
+        val vibrateForTimers by state.vibrateForTimers.collectAsState(initial = DEFAULT_VIBRATE_FOR_TIMERS)
+        SwitchPreference(
+            title = stringResource(id = R.string.vibrate_for_timers),
+            summary = stringResource(id = R.string.vibrate_for_timers_summary),
+            checked = vibrateForTimers,
+            onCheckedChange = {
+                state.setVibrateForTimers(it)
+            }
+        )
     }
 }
