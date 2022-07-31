@@ -49,22 +49,18 @@ class StopwatchScreenState(
 
     private val serviceIntent = Intent(context, StopwatchService::class.java)
 
-    val time: Flow<Time>
-        get() = stopwatchService?.time ?: emptyFlow()
+    val time: Flow<Time> = stopwatchService?.time ?: emptyFlow()
 
-    val started: Flow<Boolean>
-        get() = stopwatchService?.started ?: emptyFlow()
+    val started: Flow<Boolean> = stopwatchService?.started ?: emptyFlow()
 
-    val running: Flow<Boolean>
-        get() = stopwatchService?.running ?: emptyFlow()
+    val running: Flow<Boolean> = stopwatchService?.running ?: emptyFlow()
 
-    val laps: Flow<List<String>>
-        get() = stopwatchService?.laps?.combine(stopwatchService.currentLap) { list, lap ->
-            val newList = list.sortedByDescending { it.number }
+    val laps: Flow<List<String>> =
+        stopwatchService?.laps?.combine(stopwatchService.currentLap) { list, lap ->
             val totalDigits = getDigitsInNumber(lap.number)
             val currentLapDuration = Time.fromMillis(lap.duration)
             val currentLapTime = Time.fromMillis(lap.lapTime)
-            newList.map {
+            list.map {
                 val zerosToAdd = totalDigits - getDigitsInNumber(it.number)
                 context.getString(
                     R.string.lap_text_format_full,
@@ -85,18 +81,17 @@ class StopwatchScreenState(
             }
         }?.flowOn(Dispatchers.Default) ?: emptyFlow()
 
-    val currentLap: Flow<Pair<Int, String>>
-        get() = stopwatchService?.currentLap?.map {
-            it.number to context.getString(
-                R.string.lap_text_format_full,
-                it.number.toString(),
-                formatTime(
-                    Time.fromMillis(it.duration),
-                    alwaysShowMillis = true
-                ),
-                formatTime(Time.fromMillis(it.lapTime), alwaysShowMillis = true)
-            )
-        } ?: emptyFlow()
+    val currentLap: Flow<Pair<Int, String>> = stopwatchService?.currentLap?.map {
+        it.number to context.getString(
+            R.string.lap_text_format_full,
+            it.number.toString(),
+            formatTime(
+                Time.fromMillis(it.duration),
+                alwaysShowMillis = true
+            ),
+            formatTime(Time.fromMillis(it.lapTime), alwaysShowMillis = true)
+        )
+    } ?: emptyFlow()
 
     fun start() {
         context.startService(serviceIntent)
@@ -164,7 +159,7 @@ fun rememberStopwatchScreenState(context: Context = LocalContext.current): Stopw
             }
         }
     }
-    return remember(service, context.resources) {
+    return remember(service, context) {
         StopwatchScreenState(stopwatchService = service, context = context)
     }
 }

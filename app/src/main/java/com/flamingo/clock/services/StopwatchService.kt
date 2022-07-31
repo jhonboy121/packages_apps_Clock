@@ -53,6 +53,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -256,12 +257,13 @@ class StopwatchService : LifecycleService() {
 
     fun lap() {
         if (!_started.value || stopwatchJob?.isActive != true) return
-        lifecycleScope.launch {
+        lifecycleScope.launch(Dispatchers.Default) {
             lapMutex.withLock {
-                lapsList.add(_currentLap.value)
+                lapsList.add(0, _currentLap.value)
                 _laps.value = lapsList.toList()
-                _currentLap.value =
-                    _currentLap.value.copy(number = _currentLap.value.number + 1, duration = 0)
+                _currentLap.update {
+                    it.copy(number = it.number + 1, duration = 0)
+                }
             }
         }
     }
