@@ -106,10 +106,14 @@ class SettingsRepository(context: Context) {
         }
     }
 
-    suspend fun removeUserSound(uri: Uri) {
-        val newUris = settings.data.map { it.userSoundUrisList }.first().apply {
-            remove(uri.toString())
-        }
+    suspend fun removeUserSounds(uris: List<Uri>) {
+        val newUris = settings.data.map { it.userSoundUrisList }
+            .first()
+            .toMutableList()
+            .apply {
+                removeAll(uris.map { it.toString() })
+            }
+            .toList()
         settings.updateData {
             it.toBuilder()
                 .clearUserSoundUris()

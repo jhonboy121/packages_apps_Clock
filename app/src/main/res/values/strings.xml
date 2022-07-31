@@ -100,5 +100,6 @@
     <string name="device_sounds">Device sounds</string>
     <string name="silent">Silent</string>
     <string name="loading_progress_indicator_key" translatable="false">Loading progress indicator</string>
+    <string name="remove">Remove</string>
 
 </resources>

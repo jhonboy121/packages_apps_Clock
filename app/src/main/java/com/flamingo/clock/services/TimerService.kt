@@ -34,6 +34,7 @@ import android.os.IBinder
 import android.os.SystemClock
 import android.os.VibrationEffect
 import android.os.Vibrator
+import android.util.Log
 
 import androidx.annotation.GuardedBy
 import androidx.core.app.NotificationCompat
@@ -219,7 +220,9 @@ class TimerService : LifecycleService() {
             launch(Dispatchers.IO) {
                 anyTimerFinished.combine(settingsRepository.timerSoundUri.filterNot { it == Uri.EMPTY }) { anyTimerFinished, uri ->
                     disposeCurrentMediaPlayer()
-                    if (anyTimerFinished) {
+                    if (!anyTimerFinished) return@combine
+                    val persistedUris = contentResolver.persistedUriPermissions.map { it.uri }
+                    if (persistedUris.contains(uri)) {
                         currentMediaPlayer = MediaPlayer().apply {
                             setAudioAttributes(
                                 AudioAttributes.Builder()
@@ -231,7 +234,10 @@ class TimerService : LifecycleService() {
                             prepare()
                             start()
                         }
+                    } else {
+                        Log.e(TAG, "Application does not hold read permission for current timer sound uri")
                     }
+                    return@combine
                 }.collect()
             }
             timers
@@ -569,6 +575,8 @@ class TimerService : LifecycleService() {
     }
 
     companion object {
+        private const val TAG = "TimerService"
+
         private val RUNNING_TIMER_NOTIFICATION_CHANNEL_ID =
             "${TimerService::class.qualifiedName}_Running_Timers_NotificationChannel"
         private val FINISHED_TIMER_NOTIFICATION_CHANNEL_ID =

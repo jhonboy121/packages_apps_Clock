@@ -20,6 +20,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -31,17 +32,27 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.PopupProperties
 import androidx.navigation.NavHostController
 
 import com.airbnb.lottie.LottieProperty
@@ -80,16 +91,40 @@ fun TimerSoundScreen(
             )
         }
         items(userSounds, key = { it.uri }) { userSound ->
-            AudioPreference(
-                modifier = Modifier.then(Modifier.animateItemPlacement()),
-                title = userSound.title,
-                iconRes = userSound.iconRes,
-                isSelected = selectedTimerSound == userSound,
-                onClick = {
-                    state.setAsTimerSoundAndPlay(userSound)
-                },
-                isPlaying = state.nowPlayingSound == userSound
-            )
+            Box {
+                var showMenu by remember { mutableStateOf(false) }
+                var menuOffsetX by remember { mutableStateOf(0f) }
+                val dpOffset =
+                    with(LocalDensity.current) { DpOffset(menuOffsetX.toDp(), 0.dp) }
+                DropdownMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { showMenu = false },
+                    properties = PopupProperties(
+                        dismissOnBackPress = true,
+                        dismissOnClickOutside = true
+                    ),
+                    offset = dpOffset
+                ) {
+                    DropdownMenuItem(
+                        text = { Text(text = stringResource(id = R.string.remove)) },
+                        onClick = { state.removeUserSound(userSound.uri) }
+                    )
+                }
+                AudioPreference(
+                    modifier = Modifier.then(Modifier.animateItemPlacement()),
+                    title = userSound.title,
+                    iconRes = userSound.iconRes,
+                    isSelected = selectedTimerSound == userSound,
+                    onClick = {
+                        state.setAsTimerSoundAndPlay(userSound)
+                    },
+                    isPlaying = state.nowPlayingSound == userSound,
+                    onLongClick = {
+                        showMenu = true
+                        menuOffsetX = it.x
+                    }
+                )
+            }
         }
         item(key = R.string.add_new) {
             val launcher = rememberLauncherForActivityResult(
@@ -150,12 +185,17 @@ fun AudioPreference(
     isSelected: Boolean,
     isPlaying: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onLongClick: (Offset) -> Unit = {}
 ) {
     Preference(
         modifier = modifier,
         title = title,
-        onClick = onClick,
+        enabled = true,
+        onClick = {
+            onClick()
+        },
+        onLongClick = onLongClick,
         startWidget = {
             Icon(
                 painter = painterResource(id = iconRes),

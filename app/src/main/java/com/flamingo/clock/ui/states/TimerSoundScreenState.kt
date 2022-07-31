@@ -44,6 +44,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -72,7 +73,7 @@ class TimerSoundScreenState(
             addAll(userAudio)
         }.toList()
     }.combine(settingsRepository.timerSoundUri) { audios, uri ->
-        audios.find { it.uri == uri }
+        audios.find { it.uri == uri } ?: deviceAudio.value.firstOrNull()
     }.flowOn(Dispatchers.Default)
 
     private var currentPlayer: MediaPlayerWrapper? = null
@@ -90,9 +91,16 @@ class TimerSoundScreenState(
         }
     }
 
-    private fun loadUserSounds(uris: List<Uri>) {
+    private suspend fun loadUserSounds(uris: List<Uri>) {
+        // Sanitize uris first
+        val persistedUris = context.contentResolver.persistedUriPermissions.map { it.uri }
+        val urisToRemove = uris.filterNot { persistedUris.contains(it) }
+        if (urisToRemove.isNotEmpty()) {
+            settingsRepository.removeUserSounds(urisToRemove)
+            return
+        }
         _userAudio.value = mutableListOf<UserAudio>().apply {
-            uris.forEach { uri ->
+            uris.filter { persistedUris.contains(it) }.forEach { uri ->
                 val trackName = getTrackName(uri) ?: return@forEach
                 add(UserAudio(title = trackName, uri = uri))
             }
@@ -134,13 +142,17 @@ class TimerSoundScreenState(
 
     fun setAsTimerSoundAndPlay(audio: Audio) {
         coroutineScope.launch {
-            disposeCurrentPlayer()
-            settingsRepository.setTimerSound(audio.uri)
-            when (audio) {
-                is Audio.Silent -> {}
-                is DeviceAudio, is UserAudio -> withContext(Dispatchers.IO) {
-                    currentPlayer = MediaPlayerWrapper(context, audio.uri)
-                    startCurrentPlayer()
+            if (selectedAudio.firstOrNull() != audio) {
+                settingsRepository.setTimerSound(audio.uri)
+            }
+            if (currentPlayer?.uri != audio.uri) {
+                disposeCurrentPlayer()
+                when (audio) {
+                    is Audio.Silent -> {}
+                    is DeviceAudio, is UserAudio -> withContext(Dispatchers.IO) {
+                        currentPlayer = MediaPlayerWrapper(context, audio.uri)
+                        startCurrentPlayer()
+                    }
                 }
             }
         }
@@ -156,6 +168,21 @@ class TimerSoundScreenState(
             }
             if (_userAudio.value.any { it.uri == uri }) return@launch
             settingsRepository.addUserSound(uri)
+        }
+    }
+
+    fun removeUserSound(uri: Uri) {
+        coroutineScope.launch(Dispatchers.Default) {
+            if (currentPlayer?.uri == uri) {
+                disposeCurrentPlayer()
+            }
+            if (context.contentResolver.persistedUriPermissions.any { it.uri == uri }) {
+                context.contentResolver.releasePersistableUriPermission(
+                    uri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+            }
+            settingsRepository.removeUserSounds(listOf(uri))
         }
     }
 
