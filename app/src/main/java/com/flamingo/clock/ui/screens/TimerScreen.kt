@@ -860,13 +860,6 @@ fun TimerView(
     }
 }
 
-private enum class CenterButtonState {
-    PLAY,
-    PAUSE,
-    STOP
-}
-
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 private fun HorizontalControlButtons(
     showDeleteButton: Boolean,
@@ -884,19 +877,13 @@ private fun HorizontalControlButtons(
         modifier = modifier
     ) {
         val leftButtonAlpha by animateFloatAsState(targetValue = if (showDeleteButton) 1f else 0f)
-        IconButton(
+        DeleteButton(
             modifier = Modifier
                 .size(2 * ButtonSizeVertical / 3)
                 .clip(CircleShape)
                 .alpha(leftButtonAlpha),
             onClick = onDeleteClicked,
-            colors = IconButtonDefaults.filledIconButtonColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)
-        ) {
-            Icon(
-                imageVector = Icons.Filled.Delete,
-                contentDescription = stringResource(id = R.string.timer_delete_button_content_desc)
-            )
-        }
+        )
         val transition = updateTransition(targetState = centerButtonState, label = null)
         val aspectRatio by transition.animateFloat(label = ButtonAspectRatioAnimation) {
             when (it) {
@@ -914,46 +901,26 @@ private fun HorizontalControlButtons(
             ButtonSizeVertical / ratio
         }
         val centerButtonAlpha by animateFloatAsState(targetValue = if (showPlayOrPauseButton) 1f else 0f)
-        IconButton(
+        CenterButton(
             modifier = Modifier
                 .height(ButtonSizeVertical)
                 .aspectRatio(aspectRatio)
                 .clip(RoundedCornerShape(cornerRadius))
                 .alpha(centerButtonAlpha),
             onClick = onPlayOrPauseClicked,
-            colors = IconButtonDefaults.filledIconButtonColors(containerColor = MaterialTheme.colorScheme.primary)
-        ) {
-            AnimatedContent(targetState = centerButtonState) {
-                Icon(
-                    painter = painterResource(
-                        id = when (it) {
-                            CenterButtonState.PLAY -> R.drawable.baseline_play_arrow_24
-                            CenterButtonState.PAUSE -> R.drawable.baseline_pause_24
-                            CenterButtonState.STOP -> R.drawable.baseline_stop_24
-                        }
-                    ),
-                    contentDescription = stringResource(id = R.string.stopwatch_start_stop_button_content_desc)
-                )
-            }
-        }
+            state = centerButtonState
+        )
         val rightButtonAlpha by animateFloatAsState(targetValue = if (showAddButton) 1f else 0f)
-        IconButton(
+        AddButton(
             modifier = Modifier
                 .size(2 * ButtonSizeVertical / 3)
                 .clip(CircleShape)
                 .alpha(rightButtonAlpha),
-            onClick = onAddClicked,
-            colors = IconButtonDefaults.filledIconButtonColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)
-        ) {
-            Icon(
-                imageVector = Icons.Filled.Add,
-                contentDescription = stringResource(id = R.string.add_timer_button_content_desc)
-            )
-        }
+            onClick = onAddClicked
+        )
     }
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 private fun VerticalControlButtons(
     showDeleteButton: Boolean,
@@ -971,19 +938,13 @@ private fun VerticalControlButtons(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         val topButtonAlpha by animateFloatAsState(targetValue = if (showAddButton) 1f else 0f)
-        IconButton(
+        AddButton(
             modifier = Modifier
                 .size(4 * ButtonSizeHorizontal / 5)
                 .clip(CircleShape)
                 .alpha(topButtonAlpha),
-            onClick = onAddClicked,
-            colors = IconButtonDefaults.filledIconButtonColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)
-        ) {
-            Icon(
-                imageVector = Icons.Filled.Add,
-                contentDescription = stringResource(id = R.string.add_timer_button_content_desc)
-            )
-        }
+            onClick = onAddClicked
+        )
         val transition = updateTransition(targetState = centerButtonState, label = null)
         val aspectRatio by transition.animateFloat(label = ButtonAspectRatioAnimation) {
             when (it) {
@@ -1001,41 +962,89 @@ private fun VerticalControlButtons(
             ButtonSizeHorizontal / ratio
         }
         val centerButtonAlpha by animateFloatAsState(targetValue = if (showPlayOrPauseButton) 1f else 0f)
-        IconButton(
+        CenterButton(
             modifier = Modifier
                 .height(ButtonSizeHorizontal)
                 .aspectRatio(aspectRatio)
                 .clip(RoundedCornerShape(cornerRadius))
                 .alpha(centerButtonAlpha),
             onClick = onPlayOrPauseClicked,
-            colors = IconButtonDefaults.filledIconButtonColors(containerColor = MaterialTheme.colorScheme.primary)
-        ) {
-            AnimatedContent(targetState = centerButtonState) {
-                Icon(
-                    painter = painterResource(
-                        id = when (it) {
-                            CenterButtonState.PLAY -> R.drawable.baseline_play_arrow_24
-                            CenterButtonState.PAUSE -> R.drawable.baseline_pause_24
-                            CenterButtonState.STOP -> R.drawable.baseline_stop_24
-                        }
-                    ),
-                    contentDescription = stringResource(id = R.string.stopwatch_start_stop_button_content_desc)
-                )
-            }
-        }
+            state = centerButtonState
+        )
         val bottomButtonAlpha by animateFloatAsState(targetValue = if (showDeleteButton) 1f else 0f)
-        IconButton(
+        DeleteButton(
             modifier = Modifier
                 .size(4 * ButtonSizeHorizontal / 5)
                 .clip(CircleShape)
                 .alpha(bottomButtonAlpha),
             onClick = onDeleteClicked,
-            colors = IconButtonDefaults.filledIconButtonColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)
-        ) {
+        )
+    }
+}
+
+private enum class CenterButtonState {
+    PLAY,
+    PAUSE,
+    STOP
+}
+
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
+private fun CenterButton(
+    state: CenterButtonState,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    IconButton(
+        modifier = modifier,
+        onClick = onClick,
+        colors = IconButtonDefaults.filledIconButtonColors(containerColor = MaterialTheme.colorScheme.primary)
+    ) {
+        AnimatedContent(targetState = state) {
             Icon(
-                imageVector = Icons.Filled.Delete,
-                contentDescription = stringResource(id = R.string.timer_delete_button_content_desc)
+                painter = painterResource(
+                    id = when (it) {
+                        CenterButtonState.PLAY -> R.drawable.baseline_play_arrow_24
+                        CenterButtonState.PAUSE -> R.drawable.baseline_pause_24
+                        CenterButtonState.STOP -> R.drawable.baseline_stop_24
+                    }
+                ),
+                contentDescription = stringResource(id = R.string.timer_start_stop_button_content_desc)
             )
         }
+    }
+}
+
+@Composable
+private fun AddButton(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    IconButton(
+        modifier = modifier,
+        onClick = onClick,
+        colors = IconButtonDefaults.filledIconButtonColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)
+    ) {
+        Icon(
+            imageVector = Icons.Filled.Add,
+            contentDescription = stringResource(id = R.string.add_timer_button_content_desc)
+        )
+    }
+}
+
+@Composable
+fun DeleteButton(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    IconButton(
+        modifier = modifier,
+        onClick = onClick,
+        colors = IconButtonDefaults.filledIconButtonColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)
+    ) {
+        Icon(
+            imageVector = Icons.Filled.Delete,
+            contentDescription = stringResource(id = R.string.timer_delete_button_content_desc)
+        )
     }
 }

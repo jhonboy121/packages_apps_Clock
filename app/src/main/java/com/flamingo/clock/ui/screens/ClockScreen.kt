@@ -386,7 +386,7 @@ fun DigitalTime(
 }
 
 @Composable
-fun AddButton(
+private fun AddButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
